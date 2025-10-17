@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twibbon GKII Summit 2025</title>
+    <!-- Ganti Tailwind dengan Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Mengatur font utama dan gradient sesuai permintaan (Purple, Orange, Yellow) */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Gradient: Deep Purple (#4A148C), Deep Orange (#FF6F00), Amber (#FFD600) */
+            background: linear-gradient(135deg, #4A148C, #FF6F00, #FFD600); 
+            min-height: 100vh;
+            padding-top: 2rem; /* Tambahkan padding atas/bawah untuk margin */
+            padding-bottom: 2rem;
+        }
+
+        /* Styling untuk Card Utama (Background gelap semi-transparan) */
+        .twibbon-card {
+            background-color: rgba(33, 37, 41, 0.95); /* Dark background semi-transparan */
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 360px; /* Diperkecil dari 400px agar lebih pas di mobile */
+            width: 100%;
+            border: 1px solid #7C3AED; /* Border ungu */
+        }
+        
+        /* Style untuk Canvas Pratinjau */
+        #twibbonCanvas {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 1rem;
+            background-color: #495057; /* Warna abu-abu gelap untuk area foto kosong */
+            margin: 0 auto;
+            display: block;
+            border: 4px solid #FF6F00; /* Border Orange */
+            cursor: default; 
+            touch-action: none; 
+        }
+
+        /* Container Rasio 9:16 Responsif (Menggunakan Padding Hack) */
+        .container-twibbon {
+            width: 100%;
+            padding-top: 177.77%; /* Rasio 9:16 (16/9 * 100%) */
+            position: relative;
+        }
+        #twibbonCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 9 / 16; 
+        }
+
+        /* Custom file input style (dihias dengan gradient Orange-Yellow) */
+        .custom-file-input::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        .custom-file-input::before {
+            content: 'Pilih File';
+            display: inline-block;
+            /* Menggunakan gradien Ungu untuk tombol Upload */
+            background: linear-gradient(45deg, #7C3AED, #9333EA); 
+            border-radius: 50rem; /* Bentuk pill */
+            padding: 0.5rem 1.5rem;
+            outline: none;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s;
+        }
+        .custom-file-input:hover::before {
+            background: linear-gradient(45deg, #9333EA, #7C3AED);
+        }
+
+        /* --- GRADIENT BARU UNTUK TOMBOL DOWNLOAD --- */
+        /* Default: Orange Gradient */
+        .btn-orange-gradient {
+            background-image: linear-gradient(45deg, #FF6F00, #FFD600); /* Orange-Yellow Gradient */
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 111, 0, 0.4);
+            font-weight: bold;
+            color: #1f2937; /* Dark text for contrast */
+        }
+        .btn-orange-gradient:hover:not(:disabled) {
+            background-image: linear-gradient(45deg, #FFD600, #FF6F00);
+            box-shadow: 0 6px 15px rgba(255, 111, 0, 0.6);
+            transform: translateY(-1px);
+        }
+
+        /* Success State: Green Gradient */
+        .btn-success-gradient {
+            background-image: linear-gradient(45deg, #10B981, #059669); /* Green Gradient */
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+            font-weight: bold;
+            color: white;
+        }
+        .btn-success-gradient:hover:not(:disabled) {
+            background-image: linear-gradient(45deg, #059669, #10B981);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.6);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="twibbon-card text-white mx-auto my-5">
+        <header class="text-center mb-4">
+            <!-- Judul dengan warna Kuning dari gradient -->
+            <h1 class="h3 fw-bold" style="color: #FFD600;">GKII Twibbon Maker</h1>
+            <p class="text-secondary mt-2">Unggah foto Anda, atur posisinya, dan gabungkan!</p>
+        </header>
+
+        <!-- Area Input Foto -->
+        <div class="mb-4">
+            <label class="form-label fs-5 text-light">Langkah 1: Unggah Foto Terbaik Anda</label>
+            <input 
+                type="file" 
+                id="photoUpload" 
+                accept="image/*" 
+                class="form-control custom-file-input"
+                onchange="handleImageUpload(event)"
+            />
+        </div>
+
+        <!-- Area Canvas (Pratinjau) -->
+        <div class="d-flex justify-content-center mx-auto mb-4">
+            <div class="container-twibbon">
+                <!-- Canvas akan diatur ukurannya oleh CSS agar mengikuti rasio 9:16 -->
+                <canvas id="twibbonCanvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Area Tombol Download -->
+        <div class="text-center">
+            <button 
+                id="downloadButton" 
+                onclick="downloadImage()" 
+                disabled 
+                class="btn btn-lg btn-orange-gradient w-100 mb-2"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                Download Gambar
+            </button>
+            <!-- Menggunakan kelas Bootstrap d-none (display: none) dan text-danger -->
+            <p id="statusMessage" class="mt-3 text-danger d-none">
+                Pilih foto Anda terlebih dahulu untuk mengaktifkan tombol unduh.
+            </p>
+            <!-- Menggunakan warna Kuning (#FFD600) untuk tips kontrol -->
+            <p id="controlTip" class="mt-2 small" style="color: #FFD600;">
+                (Geser foto dengan mouse/jari, gunakan scroll/pinch untuk Zoom)
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS Bundle (Opsional, tapi praktik terbaik) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- KONFIGURASI TWIBBON ---
+        const TWIBBON_URL = 'GKII.png'; 
+        
+        // RESOLUSI DOWNLOAD SESUAI ASLI TWIBBON (9:16)
+        const CANVAS_WIDTH = 1080; 
+        const CANVAS_HEIGHT = 1920; 
+        const ZOOM_SPEED = 0.1; // Kecepatan zoom
+
+        // Inisialisasi variabel global dan elemen DOM
+        const canvas = document.getElementById('twibbonCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadButton');
+        const statusMsg = document.getElementById('statusMessage');
+        const controlTip = document.getElementById('controlTip');
+
+        let userPhoto = null;
+        let twibbonFrame = null;
+        let isTwibbonLoaded = false;
+        
+        // Variabel untuk interaksi (Geser/Zoom)
+        let imageState = {
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1.0, 
+            isDragging: false,
+            lastX: 0,
+            lastY: 0
+        };
+        
+        // Mengatur dimensi internal Canvas untuk resolusi gambar output (1080x1920)
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        // Fungsi untuk mendapatkan koordinat mouse/touch relatif terhadap canvas
+        function getCanvasCoords(event) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            
+            if (event.touches) {
+                // Untuk perangkat sentuh (touch)
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                // Untuk mouse
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+
+            // Normalisasi koordinat ke skala resolusi internal Canvas
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        // Fungsi untuk menampilkan pesan status (Diperbarui untuk Bootstrap)
+        function showMessage(message, isError = false) {
+            statusMsg.textContent = message;
+            // Menggunakan kelas d-none untuk menyembunyikan/menampilkan
+            statusMsg.classList.remove('d-none', 'text-danger', 'text-success'); 
+            // Menggunakan kelas text-danger (merah) atau text-success (hijau)
+            statusMsg.classList.add(isError ? 'text-danger' : 'text-success'); 
+            if (!isError) {
+                // Sembunyikan pesan sukses setelah 3 detik
+                setTimeout(() => statusMsg.classList.add('d-none'), 3000);
+            }
+        }
+
+        // --- Memuat Gambar Twibbon ---
+        function loadTwibbonFrame() {
+            twibbonFrame = new Image();
+            twibbonFrame.crossOrigin = "Anonymous"; 
+            twibbonFrame.onload = () => {
+                isTwibbonLoaded = true;
+                showMessage("Bingkai Twibbon berhasil dimuat.", false);
+                drawCombinedImage(); 
+            };
+            twibbonFrame.onerror = () => {
+                isTwibbonLoaded = false;
+                showMessage("ERROR: Gagal memuat gambar Twibbon. Pastikan file Twibbon ada.", true);
+                console.error("Gagal memuat Twibbon dari:", TWIBBON_URL);
+                twibbonFrame = null; 
+            };
+            twibbonFrame.src = TWIBBON_URL;
+        }
+        
+        // --- Menggambar Foto Pengguna dan Twibbon ke Canvas ---
+        function drawCombinedImage() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // 1. Gambar Background/Placeholder Kosong
+            ctx.fillStyle = '#495057'; 
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // 2. Gambar Foto Pengguna (Jika sudah diunggah)
+            if (userPhoto) {
+                // Dimensi gambar asli
+                const photoWidth = userPhoto.width;
+                const photoHeight = userPhoto.height;
+                
+                // Lebar dan tinggi setelah diskalakan oleh imageState.scale (mempertahankan ukuran asli)
+                const scaledWidth = photoWidth * imageState.scale;
+                const scaledHeight = photoHeight * imageState.scale;
+                
+                // Hitung posisi awal (center) relatif terhadap Canvas
+                const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
+                const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
+
+                ctx.drawImage(
+                    userPhoto, 
+                    0, 0, photoWidth, photoHeight, // Sumber: dimensi asli foto
+                    initialX + imageState.offsetX, // Tujuan X: posisi tengah + offset geser
+                    initialY + imageState.offsetY, // Tujuan Y: posisi tengah + offset geser
+                    scaledWidth, // Tujuan Lebar: lebar asli * skala
+                    scaledHeight // Tujuan Tinggi: tinggi asli * skala
+                );
+
+                downloadBtn.disabled = false;
+                controlTip.classList.remove('d-none');
+                canvas.style.cursor = imageState.isDragging ? 'grabbing' : 'grab';
+            } else {
+                // Tampilkan teks instruksi jika belum ada foto
+                ctx.fillStyle = '#adb5bd';
+                ctx.textAlign = 'center';
+                ctx.font = '36px Inter';
+                ctx.fillText('Unggah foto Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                downloadBtn.disabled = true;
+                controlTip.classList.add('d-none');
+                canvas.style.cursor = 'default';
+            }
+            
+            // 3. Gambar Twibbon Frame (Diatas Foto Pengguna)
+            if (isTwibbonLoaded && twibbonFrame) {
+                // Twibbon digambar menutupi seluruh canvas 9:16
+                ctx.drawImage(twibbonFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+        }
+
+        // --- Event Listener untuk Geser (Drag) dan Sentuh (Touch) ---
+
+        function handleStart(event) {
+            if (!userPhoto) return;
+            event.preventDefault(); // Mencegah perilaku default browser
+            
+            const coords = getCanvasCoords(event);
+            imageState.isDragging = true;
+            imageState.lastX = coords.x;
+            imageState.lastY = coords.y;
+            drawCombinedImage(); // Perbarui kursor
+        }
+
+        function handleMove(event) {
+            if (!imageState.isDragging) return;
+            event.preventDefault();
+            
+            const coords = getCanvasCoords(event);
+            const deltaX = coords.x - imageState.lastX;
+            const deltaY = coords.y - imageState.lastY;
+
+            imageState.offsetX += deltaX;
+            imageState.offsetY += deltaY;
+            imageState.lastX = coords.x;
+            imageState.lastY = coords.y;
+
+            drawCombinedImage();
+        }
+
+        function handleEnd(event) {
+            imageState.isDragging = false;
+            drawCombinedImage(); // Perbarui kursor
+        }
+
+        // --- Event Listener untuk Zoom (Mouse Wheel) ---
+        function handleZoom(event) {
+            if (!userPhoto) return;
+            event.preventDefault(); // Mencegah scroll halaman
+
+            const delta = event.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
+            
+            // Batasi skala minimum dan maksimum
+            imageState.scale = Math.max(0.1, Math.min(imageState.scale + delta, 5.0)); 
+            
+            drawCombinedImage();
+        }
+
+        // --- Menangani Upload Foto Pengguna ---
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                userPhoto = new Image();
+                userPhoto.onload = () => {
+                    // Skala awal dihitung agar foto muat di Canvas (logika 'contain')
+                    const scaleFactorX = CANVAS_WIDTH / userPhoto.width;
+                    const scaleFactorY = CANVAS_HEIGHT / userPhoto.height;
+                    const minScaleToFit = Math.min(scaleFactorX, scaleFactorY);
+                    
+                    let initialScale = minScaleToFit;
+                    if (initialScale < 0.1) initialScale = 0.1;
+
+                    imageState = { 
+                        offsetX: 0, 
+                        offsetY: 0, 
+                        scale: initialScale, 
+                        isDragging: false, 
+                        lastX: 0, 
+                        lastY: 0 
+                    };
+                    drawCombinedImage();
+                    showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
+                };
+                userPhoto.onerror = () => {
+                    showMessage("Gagal memuat foto. Pastikan format file gambar valid.", true);
+                }
+                userPhoto.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- Fungsi Download Gambar ---
+        function downloadImage() {
+            if (!userPhoto || !isTwibbonLoaded) {
+                showMessage("Mohon unggah foto Anda terlebih dahulu.", true);
+                return;
+            }
+
+            // Dapatkan Data URL dari canvas (dalam format PNG)
+            const imageURL = canvas.toDataURL("image/png");
+
+            // Buat elemen <a> sementara untuk memicu download
+            const link = document.createElement('a');
+            link.href = imageURL;
+            // Ukuran file output 1080x1920
+            link.download = `twibbon-gkii-summit-2025-1080x1920-${Date.now()}.png`; 
+            
+            // Pemicu download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 1. Ganti ke gradien Sukses (Hijau) dan tambahkan teks feedback
+            downloadBtn.classList.remove('btn-orange-gradient');
+            downloadBtn.classList.add('btn-success-gradient');
+            downloadBtn.innerHTML = 'Yeay Gambar Sudah di Unduh';
+
+            // 2. Tunda sebentar (3 detik), lalu ganti kembali ke gradien Orange
+            setTimeout(() => {
+                downloadBtn.classList.remove('btn-success-gradient');
+                downloadBtn.classList.add('btn-orange-gradient');
+                downloadBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Download Gambar
+                `;
+            }, 3000);
+
+            showMessage("Gambar Twibbon berhasil diunduh!", false);
+        }
+
+        // Inisialisasi: Memuat Twibbon dan memasang event listeners
+        window.onload = () => {
+            loadTwibbonFrame();
+            drawCombinedImage(); 
+            
+            // Pasang Event Listeners untuk Geser (Mouse)
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mouseleave', handleEnd); // Berhenti drag saat keluar canvas
+
+            // Pasang Event Listeners untuk Sentuh (Touch)
+            canvas.addEventListener('touchstart', handleStart, { passive: false });
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchend', handleEnd);
+
+            // Pasang Event Listener untuk Zoom (Mouse Wheel)
+            canvas.addEventListener('wheel', handleZoom, { passive: false });
+        };
+
+    </script>
+</body>
+</html>
