@@ -6,11 +6,12 @@
     <title>Twibbon GKII Summit 2025</title>
     <!-- Ganti Tailwind dengan Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Diperbarui: Mengganti Inter dengan Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Mengatur font utama dan gradient sesuai permintaan (Purple, Orange, Yellow) */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif; /* Diperbarui ke Poppins */
             /* Gradient: Deep Purple (#4A148C), Deep Orange (#FF6F00), Amber (#FFD600) */
             background: linear-gradient(135deg, #4A148C, #FF6F00, #FFD600); 
             min-height: 100vh;
@@ -38,7 +39,7 @@
             display: block;
             border: 4px solid #FF6F00; /* Border Orange */
             cursor: default; 
-            touch-action: none; 
+            touch-action: none; /* Mencegah scroll saat interaksi geser/zoom di Canvas */
         }
 
         /* Container Rasio 9:16 Responsif (Menggunakan Padding Hack) */
@@ -56,7 +57,7 @@
             aspect-ratio: 9 / 16; 
         }
 
-        /* Custom file input style (dihias dengan gradient Orange-Yellow) */
+        /* Custom file input style (dihias dengan gradient Ungu) */
         .custom-file-input::-webkit-file-upload-button {
             visibility: hidden;
         }
@@ -176,7 +177,7 @@
         // RESOLUSI DOWNLOAD SESUAI ASLI TWIBBON (9:16)
         const CANVAS_WIDTH = 1080; 
         const CANVAS_HEIGHT = 1920; 
-        const ZOOM_SPEED = 0.1; // Kecepatan zoom
+        const ZOOM_SPEED = 0.05; // Kecepatan zoom diubah sedikit agar lebih halus
 
         // Inisialisasi variabel global dan elemen DOM
         const canvas = document.getElementById('twibbonCanvas');
@@ -195,6 +196,8 @@
             offsetY: 0,
             scale: 1.0, 
             isDragging: false,
+            isPinching: false, // NEW: Untuk melacak mode pinch
+            initialDistance: 0, // NEW: Untuk menyimpan jarak awal pinch
             lastX: 0,
             lastY: 0
         };
@@ -209,7 +212,7 @@
             let clientX, clientY;
             
             if (event.touches) {
-                // Untuk perangkat sentuh (touch)
+                // Untuk perangkat sentuh (drag satu jari, pinch dua jari)
                 clientX = event.touches[0].clientX;
                 clientY = event.touches[0].clientY;
             } else {
@@ -297,7 +300,7 @@
                 // Tampilkan teks instruksi jika belum ada foto
                 ctx.fillStyle = '#adb5bd';
                 ctx.textAlign = 'center';
-                ctx.font = '36px Inter';
+                ctx.font = '36px Poppins'; // Diperbarui ke Poppins
                 ctx.fillText('Unggah foto Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 downloadBtn.disabled = true;
                 controlTip.classList.add('d-none');
@@ -317,31 +320,75 @@
             if (!userPhoto) return;
             event.preventDefault(); // Mencegah perilaku default browser
             
-            const coords = getCanvasCoords(event);
-            imageState.isDragging = true;
-            imageState.lastX = coords.x;
-            imageState.lastY = coords.y;
+            if (event.touches && event.touches.length === 2) {
+                // PINCH START (Dua Jari)
+                imageState.isDragging = false;
+                imageState.isPinching = true;
+                
+                // Hitung jarak awal antara kedua jari
+                const dx = event.touches[1].clientX - event.touches[0].clientX;
+                const dy = event.touches[1].clientY - event.touches[0].clientY;
+                imageState.initialDistance = Math.sqrt(dx * dx + dy * dy);
+            } else if ((event.touches && event.touches.length === 1) || event.buttons === 1) {
+                // DRAG START (Satu Jari atau Mouse Klik)
+                imageState.isDragging = true;
+                imageState.isPinching = false;
+                
+                const coords = getCanvasCoords(event);
+                imageState.lastX = coords.x;
+                imageState.lastY = coords.y;
+            }
             drawCombinedImage(); // Perbarui kursor
         }
 
         function handleMove(event) {
-            if (!imageState.isDragging) return;
+            if (!userPhoto) return;
             event.preventDefault();
-            
-            const coords = getCanvasCoords(event);
-            const deltaX = coords.x - imageState.lastX;
-            const deltaY = coords.y - imageState.lastY;
 
-            imageState.offsetX += deltaX;
-            imageState.offsetY += deltaY;
-            imageState.lastX = coords.x;
-            imageState.lastY = coords.y;
+            if (imageState.isPinching && event.touches && event.touches.length === 2) {
+                // PINCH MOVE (Zoom)
+                const dx = event.touches[1].clientX - event.touches[0].clientX;
+                const dy = event.touches[1].clientY - event.touches[0].clientY;
+                const currentDistance = Math.sqrt(dx * dx + dy * dy);
+
+                // Hitung faktor skala relatif
+                const scaleMultiplier = currentDistance / imageState.initialDistance;
+                const newScale = imageState.scale * scaleMultiplier;
+                
+                // Batasi skala minimum dan maksimum
+                const clampedScale = Math.max(0.1, Math.min(newScale, 5.0));
+
+                if (clampedScale !== imageState.scale) {
+                    imageState.scale = clampedScale;
+                    // Reset jarak awal untuk gerakan zoom yang lebih lancar
+                    imageState.initialDistance = currentDistance; 
+                }
+
+            } else if (imageState.isDragging) {
+                // DRAG MOVE (Geser)
+                const coords = getCanvasCoords(event);
+                const deltaX = coords.x - imageState.lastX;
+                const deltaY = coords.y - imageState.lastY;
+
+                imageState.offsetX += deltaX;
+                imageState.offsetY += deltaY;
+                imageState.lastX = coords.x;
+                imageState.lastY = coords.y;
+            }
 
             drawCombinedImage();
         }
 
         function handleEnd(event) {
-            imageState.isDragging = false;
+            // Logika untuk menghentikan drag/pinch setelah sentuhan diangkat
+            if (!event.touches || event.touches.length === 0) {
+                imageState.isDragging = false;
+                imageState.isPinching = false;
+                imageState.initialDistance = 0;
+            }
+            // Jika satu jari diangkat saat pinch, kita berhenti pinch, tapi tidak drag.
+            // Drag akan diaktifkan ulang jika jari yang tersisa bergerak (di handleMove berikutnya).
+            
             drawCombinedImage(); // Perbarui kursor
         }
 
@@ -379,7 +426,9 @@
                         offsetX: 0, 
                         offsetY: 0, 
                         scale: initialScale, 
-                        isDragging: false, 
+                        isDragging: false,
+                        isPinching: false,
+                        initialDistance: 0,
                         lastX: 0, 
                         lastY: 0 
                     };
@@ -418,7 +467,7 @@
             // 1. Ganti ke gradien Sukses (Hijau) dan tambahkan teks feedback
             downloadBtn.classList.remove('btn-orange-gradient');
             downloadBtn.classList.add('btn-success-gradient');
-            downloadBtn.innerHTML = 'Yeay Gambar Sudah di Unduh';
+            downloadBtn.innerHTML = '✅ Yeay Gambar Sudah di Unduh';
 
             // 2. Tunda sebentar (3 detik), lalu ganti kembali ke gradien Orange
             setTimeout(() => {
@@ -447,7 +496,7 @@
             canvas.addEventListener('mouseup', handleEnd);
             canvas.addEventListener('mouseleave', handleEnd); // Berhenti drag saat keluar canvas
 
-            // Pasang Event Listeners untuk Sentuh (Touch)
+            // Pasang Event Listeners untuk Sentuh (Touch) - Aktif untuk Drag dan Pinch
             canvas.addEventListener('touchstart', handleStart, { passive: false });
             canvas.addEventListener('touchmove', handleMove, { passive: false });
             canvas.addEventListener('touchend', handleEnd);
