@@ -130,19 +130,17 @@
             transform: none; /* Hapus efek angkat */
         }
 
-        /* NEW: Style untuk Floating Scroll Indicator */
+        /* NEW: Style untuk Floating Scroll Indicator (DIUBAH TOTAL) */
         .floating-scroll-indicator {
             position: fixed;
-            bottom: 80px; /* Posisi di atas area tombol download */
+            bottom: 80px; 
             right: 15px;
             z-index: 1050; 
-            background: #FF6F00; /* Orange solid */
-            color: #1f2937; /* Teks gelap */
-            border-radius: 50%;
-            padding: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            
+            /* Dihapus: background, border-radius, box-shadow, animation */
+            background: none; 
+            padding: 5px; /* Padding minimal */
             cursor: pointer;
-            animation: bounce 2s infinite; 
             display: none; /* Default sembunyikan */
         }
         /* Tampilkan hanya di layar kecil (Mobile) */
@@ -152,26 +150,20 @@
             }
         }
 
-        /* NEW: Style untuk Ikon Panah (lebih ramping dan tinggi) */
+        /* NEW: Style untuk Ikon Panah (Putih, Jelas) */
         .floating-scroll-indicator .scroll-icon {
             display: block;
             margin: 0 auto;
-            width: 14px; /* Lebar lebih kecil */
-            height: 24px; /* Tinggi lebih besar */
-            fill: #1f2937;
+            width: 24px; 
+            height: 36px; /* Ikon panah vertikal yang jelas */
+            fill: white; /* Warna Putih solid */
+            opacity: 0.8;
+            transition: opacity 0.3s;
         }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+        .floating-scroll-indicator:hover .scroll-icon {
+            opacity: 1;
         }
+        
     </style>
 </head>
 <body>
@@ -231,12 +223,11 @@
 
     <!-- NEW: Floating Scroll Indicator for Mobile -->
     <div id="floatingScrollPrompt" class="floating-scroll-indicator" onclick="scrollToDownloadButton()">
-        <!-- Menggunakan ikon panah atas-bawah yang lebih jelas (seperti yang Anda unggah) -->
+        <!-- Ikon panah atas-bawah yang jelas dan sederhana (Putih) -->
         <svg class="scroll-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-            <!-- Panah Atas (Dibuat tidak terlihat karena tujuannya hanya scroll ke bawah) -->
-            <path d="M8 3.5l-4 4h8l-4-4z" style="opacity: 0;"/> 
-            <!-- Panah Bawah -->
-            <path d="M8 12.5l-4-4h8l-4 4z"/> 
+            <!-- Ikon Panah Atas-Bawah sederhana -->
+            <path d="M8 12.5l-4-4h8l-4 4z"/> <!-- Panah Bawah -->
+            <path d="M8 3.5l-4 4h8l-4-4z"/> <!-- Panah Atas (Dibuat opacity rendah jika ingin terlihat) -->
         </svg>
     </div>
 
@@ -259,7 +250,7 @@
         const statusMsg = document.getElementById('statusMessage');
         const controlTip = document.getElementById('controlTip');
         const floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
-        const canvasArea = document.getElementById('canvasArea'); // NEW: Ambil elemen area Canvas
+        const canvasArea = document.getElementById('canvasArea'); // Ambil elemen area Canvas
 
         let userPhoto = null;
         let twibbonFrame = null;
@@ -271,8 +262,8 @@
             offsetY: 0,
             scale: 1.0, 
             isDragging: false,
-            isPinching: false, // NEW: Untuk melacak mode pinch
-            initialDistance: 0, // NEW: Untuk menyimpan jarak awal pinch
+            isPinching: false,
+            initialDistance: 0,
             lastX: 0,
             lastY: 0
         };
@@ -283,7 +274,7 @@
 
         // Fungsi untuk mengarahkan pengguna ke tombol download
         function scrollToDownloadButton() {
-            // Gulir ke posisi tombol download dengan efek halus (smooth)
+            // Target scroll ke Tombol Download itu sendiri
             downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
             
             // Sembunyikan prompt setelah diklik
@@ -296,16 +287,13 @@
             let clientX, clientY;
             
             if (event.touches) {
-                // Untuk perangkat sentuh (drag satu jari, pinch dua jari)
                 clientX = event.touches[0].clientX;
                 clientY = event.touches[0].clientY;
             } else {
-                // Untuk mouse
                 clientX = event.clientX;
                 clientY = event.clientY;
             }
 
-            // Normalisasi koordinat ke skala resolusi internal Canvas
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
 
@@ -318,12 +306,9 @@
         // Fungsi untuk menampilkan pesan status (Diperbarui untuk Bootstrap)
         function showMessage(message, isError = false) {
             statusMsg.textContent = message;
-            // Menggunakan kelas d-none untuk menyembunyikan/menampilkan
             statusMsg.classList.remove('d-none', 'text-danger', 'text-success'); 
-            // Menggunakan kelas text-danger (merah) atau text-success (hijau)
             statusMsg.classList.add(isError ? 'text-danger' : 'text-success'); 
             if (!isError) {
-                // Sembunyikan pesan sukses setelah 3 detik
                 setTimeout(() => statusMsg.classList.add('d-none'), 3000);
             }
         }
@@ -356,25 +341,22 @@
 
             // 2. Gambar Foto Pengguna (Jika sudah diunggah)
             if (userPhoto) {
-                // Dimensi gambar asli
                 const photoWidth = userPhoto.width;
                 const photoHeight = userPhoto.height;
                 
-                // Lebar dan tinggi setelah diskalakan oleh imageState.scale (mempertahankan ukuran asli)
                 const scaledWidth = photoWidth * imageState.scale;
                 const scaledHeight = photoHeight * imageState.scale;
                 
-                // Hitung posisi awal (center) relatif terhadap Canvas
                 const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
                 const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
 
                 ctx.drawImage(
                     userPhoto, 
-                    0, 0, photoWidth, photoHeight, // Sumber: dimensi asli foto
-                    initialX + imageState.offsetX, // Tujuan X: posisi tengah + offset geser
-                    initialY + imageState.offsetY, // Tujuan Y: posisi tengah + offset geser
-                    scaledWidth, // Tujuan Lebar: lebar asli * skala
-                    scaledHeight // Tujuan Tinggi: tinggi asli * skala
+                    0, 0, photoWidth, photoHeight,
+                    initialX + imageState.offsetX,
+                    initialY + imageState.offsetY,
+                    scaledWidth,
+                    scaledHeight
                 );
 
                 downloadBtn.disabled = false;
@@ -384,7 +366,7 @@
                 // Tampilkan teks instruksi jika belum ada foto
                 ctx.fillStyle = '#adb5bd';
                 ctx.textAlign = 'center';
-                ctx.font = '36px Poppins'; // Diperbarui ke Poppins
+                ctx.font = '36px Poppins'; 
                 ctx.fillText('Unggah foto Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 downloadBtn.disabled = true;
                 controlTip.classList.add('d-none');
@@ -393,7 +375,6 @@
             
             // 3. Gambar Twibbon Frame (Diatas Foto Pengguna)
             if (isTwibbonLoaded && twibbonFrame) {
-                // Twibbon digambar menutupi seluruh canvas 9:16
                 ctx.drawImage(twibbonFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             }
         }
@@ -403,7 +384,6 @@
         function handleStart(event) {
             if (!userPhoto) return;
             
-            // Logika untuk mendeteksi apakah interaksi geser/pinch terjadi di Canvas.
             const rect = canvas.getBoundingClientRect();
             const clientX = event.touches ? event.touches[0].clientX : event.clientX;
             const clientY = event.touches ? event.touches[0].clientY : event.clientY;
@@ -414,18 +394,15 @@
             );
 
             if (event.touches && event.touches.length === 2 && isInsideCanvas) {
-                event.preventDefault(); // Cegah default browser saat pinch
-                // PINCH START (Dua Jari)
+                event.preventDefault();
                 imageState.isDragging = false;
                 imageState.isPinching = true;
                 
-                // Hitung jarak awal antara kedua jari
                 const dx = event.touches[1].clientX - event.touches[0].clientX;
                 const dy = event.touches[1].clientY - event.touches[0].clientY;
                 imageState.initialDistance = Math.sqrt(dx * dx + dy * dy);
             } else if (((event.touches && event.touches.length === 1) || event.buttons === 1) && isInsideCanvas) {
-                // DRAG START (Satu Jari atau Mouse Klik)
-                event.preventDefault(); // Cegah default browser (scroll) hanya jika di dalam canvas
+                event.preventDefault();
                 imageState.isDragging = true;
                 imageState.isPinching = false;
                 
@@ -433,65 +410,52 @@
                 imageState.lastX = coords.x;
                 imageState.lastY = coords.y;
             }
-            // Jika sentuhan hanya satu jari/klik dan di luar Canvas, isInsideCanvas akan false, dan event.preventDefault() tidak dipanggil, sehingga scroll halaman berjalan normal.
             
-            drawCombinedImage(); // Perbarui kursor
+            drawCombinedImage();
         }
 
         function handleMove(event) {
             if (!userPhoto) return;
             
             if (imageState.isPinching && event.touches && event.touches.length === 2) {
-                event.preventDefault(); // Cegah default browser saat pinch
+                event.preventDefault();
                 const rect = canvas.getBoundingClientRect();
                 const oldScale = imageState.scale;
                 
-                // 1. Hitung Jarak
                 const dx = event.touches[1].clientX - event.touches[0].clientX;
                 const dy = event.touches[1].clientY - event.touches[0].clientY;
                 const currentDistance = Math.sqrt(dx * dx + dy * dy);
 
-                // 2. Hitung Skala Baru
                 const scaleMultiplier = currentDistance / imageState.initialDistance;
                 let newScale = oldScale * scaleMultiplier;
-                newScale = Math.max(0.1, Math.min(newScale, 5.0)); // Batasan skala
+                newScale = Math.max(0.1, Math.min(newScale, 5.0));
 
-                // 3. Lakukan Koreksi Offset hanya jika skala berubah
                 if (newScale !== oldScale) {
                     
-                    // Hitung Titik Tengah Pinch di koordinat Canvas internal
                     const centerX_screen = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                     const centerY_screen = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                     
-                    // Konversi ke koordinat internal Canvas (resolusi 1080x1920)
                     const Px = (centerX_screen - rect.left) * (CANVAS_WIDTH / rect.width);
                     const Py = (centerY_screen - rect.top) * (CANVAS_HEIGHT / rect.height);
                     
-                    // InitialX/Y adalah posisi foto yang diskalakan jika offset=0
                     const scaledWidth = userPhoto.width * oldScale;
                     const scaledHeight = userPhoto.height * oldScale;
                     const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
                     const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
                     
-                    // Hitung titik Px, Py relatif terhadap posisi awal foto (sebelum skala baru)
-                    // Px - (initialX + imageState.offsetX)
                     const imageRelX = Px - initialX - imageState.offsetX;
                     const imageRelY = Py - initialY - imageState.offsetY;
 
-                    // Faktor perubahan skala
                     const factor = newScale / oldScale;
 
-                    // Koreksi offset agar titik pinch (Px, Py) tetap di tempatnya setelah skala baru diterapkan
                     imageState.offsetX += imageRelX * (1 - factor);
                     imageState.offsetY += imageRelY * (1 - factor);
 
-                    // Terapkan skala baru
                     imageState.scale = newScale;
-                    imageState.initialDistance = currentDistance; // Reset jarak awal
+                    imageState.initialDistance = currentDistance;
                 }
             } else if (imageState.isDragging) {
-                 event.preventDefault(); // Cegah default browser (scroll) saat drag aktif
-                // DRAG MOVE (Geser)
+                 event.preventDefault();
                 const coords = getCanvasCoords(event);
                 const deltaX = coords.x - imageState.lastX;
                 const deltaY = coords.y - imageState.lastY;
@@ -501,49 +465,44 @@
                 imageState.lastX = coords.x;
                 imageState.lastY = coords.y;
             }
-            // Jika tidak dragging atau pinching, default behavior (scroll) diizinkan
             
             drawCombinedImage();
         }
 
         function handleEnd(event) {
-            // Logika untuk menghentikan drag/pinch setelah sentuhan diangkat
             if (!event.touches || event.touches.length === 0) {
                 imageState.isDragging = false;
                 imageState.isPinching = false;
                 imageState.initialDistance = 0;
             }
             
-            drawCombinedImage(); // Perbarui kursor
+            drawCombinedImage();
         }
 
         // --- Event Listener untuk Zoom (Mouse Wheel) ---
         function handleZoom(event) {
             if (!userPhoto) return;
-            event.preventDefault(); // Mencegah scroll halaman saat zoom di Canvas
+            event.preventDefault();
 
             const oldScale = imageState.scale;
             const delta = event.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
             
             let newScale = imageState.scale + delta;
-            newScale = Math.max(0.1, Math.min(newScale, 5.0)); // Batasan skala
+            newScale = Math.max(0.1, Math.min(newScale, 5.0));
 
             if (newScale !== oldScale) {
                 const factor = newScale / oldScale;
                 const rect = canvas.getBoundingClientRect();
                 
-                // Hitung posisi kursor di koordinat internal Canvas
                 const Px = event.offsetX * (CANVAS_WIDTH / rect.width);
                 const Py = event.offsetY * (CANVAS_HEIGHT / rect.height);
 
-                // Hitung offset foto
                 const initialX = (CANVAS_WIDTH - userPhoto.width * oldScale) / 2;
                 const initialY = (CANVAS_HEIGHT - userPhoto.height * oldScale) / 2;
                 
                 const imageRelX = Px - initialX - imageState.offsetX;
                 const imageRelY = Py - initialY - imageState.offsetY;
                 
-                // Koreksi offset
                 imageState.offsetX += imageRelX * (1 - factor);
                 imageState.offsetY += imageRelY * (1 - factor);
                 imageState.scale = newScale;
@@ -561,7 +520,6 @@
             reader.onload = (e) => {
                 userPhoto = new Image();
                 userPhoto.onload = () => {
-                    // Skala awal dihitung agar foto muat di Canvas (logika 'contain')
                     const scaleFactorX = CANVAS_WIDTH / userPhoto.width;
                     const scaleFactorY = CANVAS_HEIGHT / userPhoto.height;
                     const minScaleToFit = Math.min(scaleFactorX, scaleFactorY);
@@ -582,8 +540,8 @@
                     drawCombinedImage();
                     showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
                     
-                    // NEW: Auto-scroll ke area Canvas agar tombol download terlihat
-                    canvasArea.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+                    // PERBAIKAN: Auto-scroll ke Tombol Download agar pasti terlihat
+                    downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 };
                 userPhoto.onerror = () => {
                     showMessage("Gagal memuat foto. Pastikan format file gambar valid.", true);
@@ -600,26 +558,20 @@
                 return;
             }
 
-            // Dapatkan Data URL dari canvas (dalam format PNG)
             const imageURL = canvas.toDataURL("image/png");
 
-            // Buat elemen <a> sementara untuk memicu download
             const link = document.createElement('a');
             link.href = imageURL;
-            // Ukuran file output 1080x1920
             link.download = `twibbon-gkii-summit-2025-1080x1920-${Date.now()}.png`; 
             
-            // Pemicu download
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            // 1. Ganti ke gradien Sukses (Hijau) dan tambahkan teks feedback
             downloadBtn.classList.remove('btn-orange-gradient');
             downloadBtn.classList.add('btn-success-gradient');
             downloadBtn.innerHTML = '✅ Yeay Gambar Sudah di Unduh';
 
-            // 2. Tunda sebentar (3 detik), lalu ganti kembali ke gradien Orange
             setTimeout(() => {
                 downloadBtn.classList.remove('btn-success-gradient');
                 downloadBtn.classList.add('btn-orange-gradient');
@@ -640,21 +592,17 @@
             loadTwibbonFrame();
             drawCombinedImage(); 
             
-            // Pasang Event Listeners untuk Geser (Mouse)
             canvas.addEventListener('mousedown', handleStart);
             canvas.addEventListener('mousemove', handleMove);
             canvas.addEventListener('mouseup', handleEnd);
-            canvas.addEventListener('mouseleave', handleEnd); // Berhenti drag saat keluar canvas
+            canvas.addEventListener('mouseleave', handleEnd);
 
-            // Pasang Event Listeners untuk Sentuh (Touch) - Aktif untuk Drag dan Pinch
             canvas.addEventListener('touchstart', handleStart, { passive: false });
             canvas.addEventListener('touchmove', handleMove, { passive: false });
             canvas.addEventListener('touchend', handleEnd);
 
-            // Pasang Event Listener untuk Zoom (Mouse Wheel)
             canvas.addEventListener('wheel', handleZoom, { passive: false });
 
-            // Cek posisi scroll saat halaman dimuat (untuk menyembunyikan/menampilkan floating button)
             checkScrollPosition(); 
             window.addEventListener('scroll', checkScrollPosition);
         };
@@ -665,9 +613,7 @@
             const viewportHeight = window.innerHeight;
             const scrollY = window.scrollY;
 
-            // Tampilkan tombol hanya jika halaman bisa di-scroll DAN belum mencapai bagian bawah.
             if (documentHeight > viewportHeight && scrollY < (documentHeight - viewportHeight - 100)) {
-                 // Hanya tampilkan jika layar mobile (max-width: 576px)
                 if (window.matchMedia("(max-width: 576px)").matches) {
                     floatingScrollPrompt.style.display = 'block';
                 }
