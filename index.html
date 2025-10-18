@@ -66,7 +66,7 @@
             display: inline-block;
             /* Menggunakan warna solid Orange untuk tombol Upload */
             background: #FF6F00; 
-            border-radius: 0; /* Hapus radius */
+            border-radius: 0 !important; /* DIPERBAIKI: Menggunakan !important */
             padding: 0.5rem 1.5rem;
             outline: none;
             white-space: nowrap;
@@ -75,8 +75,8 @@
             font-weight: 600;
             color: white; 
             transition: all 0.3s;
-            border: none; /* DIHAPUS: Hapus border kuning */
-            box-shadow: none; /* Hapus shadow */
+            border: none !important; /* DIPERBAIKI: Menggunakan !important */
+            box-shadow: none !important; /* DIPERBAIKI: Menggunakan !important */
         }
         .custom-file-input:hover::before {
             background: #FFD600; /* Hover menjadi kuning */
@@ -84,11 +84,18 @@
         }
         /* Memastikan input file sendiri tidak memiliki radius atau background yang mengganggu */
         .form-control.custom-file-input {
-            border: none;
+            border: none !important; /* DIPERBAIKI: Jamin tidak ada border default */
             padding: 0;
             background-color: transparent;
-            border-radius: 0; /* DIUBAH: Hapus radius pada penampung input */
+            border-radius: 0 !important; /* DIPERBAIKI: Jamin tidak ada radius default */
+            box-shadow: none !important; /* DIPERBAIKI: Jamin tidak ada shadow default */
         }
+        /* Menghapus focus ring default Bootstrap pada penampung input */
+        .form-control.custom-file-input:focus {
+            box-shadow: none !important;
+            border-color: transparent !important;
+        }
+
 
         /* --- GRADIENT BARU UNTUK TOMBOL DOWNLOAD (DIUBAH: Hapus Radius & Shadow) --- */
         /* Default: Orange Gradient */
@@ -610,5 +617,3 @@
         };
 
     </script>
-</body>
-</html>
