@@ -57,7 +57,7 @@
             aspect-ratio: 9 / 16; 
         }
 
-        /* Custom file input style (DIUBAH: Hapus Radius, Warna Orange/Kuning) */
+        /* Custom file input style */
         .custom-file-input::-webkit-file-upload-button {
             visibility: hidden;
         }
@@ -66,7 +66,7 @@
             display: inline-block;
             /* Menggunakan warna solid Orange untuk tombol Upload */
             background: #FF6F00; 
-            border-radius: 0 !important; /* DIPERBAIKI: Menggunakan !important */
+            border-radius: 0 !important; /* Jamin tidak ada radius */
             padding: 0.5rem 1.5rem;
             outline: none;
             white-space: nowrap;
@@ -75,8 +75,8 @@
             font-weight: 600;
             color: white; 
             transition: all 0.3s;
-            border: none !important; /* DIPERBAIKI: Menggunakan !important */
-            box-shadow: none !important; /* DIPERBAIKI: Menggunakan !important */
+            border: none !important; 
+            box-shadow: none !important;
         }
         .custom-file-input:hover::before {
             background: #FFD600; /* Hover menjadi kuning */
@@ -84,11 +84,11 @@
         }
         /* Memastikan input file sendiri tidak memiliki radius atau background yang mengganggu */
         .form-control.custom-file-input {
-            border: none !important; /* DIPERBAIKI: Jamin tidak ada border default */
+            border: none !important; 
             padding: 0;
             background-color: transparent;
-            border-radius: 0 !important; /* DIPERBAIKI: Jamin tidak ada radius default */
-            box-shadow: none !important; /* DIPERBAIKI: Jamin tidak ada shadow default */
+            border-radius: 0 !important; 
+            box-shadow: none !important;
         }
         /* Menghapus focus ring default Bootstrap pada penampung input */
         .form-control.custom-file-input:focus {
@@ -130,13 +130,27 @@
             transform: none; /* Hapus efek angkat */
         }
 
-        /* NEW: Style untuk Indikator Scroll */
-        .scroll-indicator {
-            margin-top: 1.5rem;
-            margin-bottom: 0; /* Hapus margin bawah agar lebih dekat ke tombol */
-            color: #FFD600; /* Warna Kuning */
-            /* Animasi bounce untuk menarik perhatian */
+        /* NEW: Style untuk Floating Scroll Indicator */
+        .floating-scroll-indicator {
+            position: fixed;
+            bottom: 80px; /* Posisi di atas area tombol download */
+            right: 15px;
+            z-index: 1050; 
+            background: #FF6F00; /* Orange solid */
+            color: #1f2937; /* Teks gelap */
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
             animation: bounce 2s infinite; 
+            display: none; /* Default sembunyikan */
+        }
+
+        /* Tampilkan hanya di layar kecil (Mobile) */
+        @media (max-width: 576px) {
+            .floating-scroll-indicator {
+                display: block;
+            }
         }
 
         @keyframes bounce {
@@ -180,14 +194,8 @@
                 <canvas id="twibbonCanvas"></canvas>
             </div>
         </div>
-
-        <!-- NEW: Scroll Indicator -->
-        <div id="scrollPrompt" class="text-center scroll-indicator">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#FFD600" class="bi bi-arrow-down-circle-fill" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z"/>
-            </svg>
-            <p class="small fw-bold mt-1 mb-4">Scroll ke Bawah untuk Download</p>
-        </div>
+        
+        <!-- AREA TOMBOL DOWNLOAD TIDAK PERLU SCROLL PROMPT DI SINI LAGI -->
         
         <!-- Area Tombol Download -->
         <div class="text-center">
@@ -213,6 +221,13 @@
             </p>
         </div>
 
+    </div>
+
+    <!-- NEW: Floating Scroll Indicator for Mobile -->
+    <div id="floatingScrollPrompt" class="floating-scroll-indicator" onclick="window.scrollBy(0, 300);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-down-short" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5A.5.5 0 0 1 8 4z" fill="#1f2937"/>
+        </svg>
     </div>
 
     <!-- Bootstrap JS Bundle (Opsional, tapi praktik terbaik) -->
@@ -617,3 +632,5 @@
         };
 
     </script>
+</body>
+</html>
