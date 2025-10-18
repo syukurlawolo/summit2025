@@ -196,7 +196,7 @@
         </div>
 
         <!-- Area Canvas (Pratinjau) -->
-        <div class="d-flex justify-content-center mx-auto mb-4">
+        <div id="canvasArea" class="d-flex justify-content-center mx-auto mb-4">
             <div class="container-twibbon">
                 <!-- Canvas akan diatur ukurannya oleh CSS agar mengikuti rasio 9:16 -->
                 <canvas id="twibbonCanvas"></canvas>
@@ -259,6 +259,7 @@
         const statusMsg = document.getElementById('statusMessage');
         const controlTip = document.getElementById('controlTip');
         const floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
+        const canvasArea = document.getElementById('canvasArea'); // NEW: Ambil elemen area Canvas
 
         let userPhoto = null;
         let twibbonFrame = null;
@@ -580,6 +581,9 @@
                     };
                     drawCombinedImage();
                     showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
+                    
+                    // NEW: Auto-scroll ke area Canvas agar tombol download terlihat
+                    canvasArea.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
                 };
                 userPhoto.onerror = () => {
                     showMessage("Gagal memuat foto. Pastikan format file gambar valid.", true);
