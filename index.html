@@ -157,6 +157,7 @@
         // === KONFIGURASI DAN INIALISASI ===
         // ===================================
         
+        // PASTIKAN NAMA FILE BENAR: GKII.png harus berada di folder yang sama dengan file HTML ini.
         const TWIBBON_URL = 'GKII.png'; 
         const CANVAS_WIDTH = 1080; 
         const CANVAS_HEIGHT = 1920; 
@@ -165,7 +166,7 @@
         let mediaType = 'image';
         let userVideo = null; 
         let userPhoto = null;
-        let twibbonFrame = null;
+        let twibbonFrame = null; // Ini adalah variabel untuk gambar twibbon
         let isTwibbonLoaded = false;
         let animationFrameId = null;
         
@@ -219,7 +220,8 @@
             canvas.width = CANVAS_WIDTH;
             canvas.height = CANVAS_HEIGHT;
 
-            loadTwibbonFrame();
+            // Memanggil pemuatan Twibbon Frame di sini
+            loadTwibbonFrame(); 
             drawCombinedImage(); 
             
             // Pasang semua Event Listeners untuk interaksi
@@ -235,6 +237,26 @@
             window.addEventListener('scroll', checkScrollPosition);
         }
         
+        // =========================================
+        // === FUNGSI PEMUATAN TWIBBON FRAME (FIX) ===
+        // =========================================
+        function loadTwibbonFrame() {
+            twibbonFrame = new Image();
+            twibbonFrame.crossOrigin = "Anonymous"; 
+            twibbonFrame.onload = () => {
+                isTwibbonLoaded = true;
+                // Tidak perlu showMessage di sini, cukup panggil draw untuk menampilkan
+                drawCombinedImage(); 
+            };
+            twibbonFrame.onerror = () => {
+                isTwibbonLoaded = false;
+                showMessage("ERROR: Gagal memuat bingkai Twibbon. Pastikan GKII.png ada di lokasi yang benar.", true);
+                twibbonFrame = null; 
+            };
+            twibbonFrame.src = TWIBBON_URL;
+        }
+
+
         // ==========================================
         // === FUNGSI UTAMA DRAW DAN ANIMASI VIDEO ===
         // ==========================================
@@ -303,16 +325,14 @@
                 canvas.style.cursor = 'default';
             }
             
+            // KRUSIAL: Pastikan Twibbon Frame digambar di lapisan paling atas
             if (isTwibbonLoaded && twibbonFrame) {
                 ctx.drawImage(twibbonFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             }
 
+            // Jika video berjalan, panggil frame berikutnya
             if (mediaType === 'video' && userVideo.paused && !userVideo.ended && animationFrameId === null) {
-                // Jika video di-pause, pastikan frame yang tampil adalah frame terakhir
-                // dan jangan mulai loop baru.
-                // Jika user menggeser video, kita perlu panggil drawCombinedImage() secara manual.
-                // Kita panggil animateCanvas() sekali untuk menarik frame saat ini.
-                // Logika utama requestAnimationFrame ada di luar.
+                // Jika video paused, drawCombinedImage dipanggil secara manual dari event handler
             }
         }
         
@@ -351,7 +371,6 @@
             userPhoto.onload = () => {
                 resetImageState(userPhoto.width, userPhoto.height);
                 showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
-                // Hentikan animasi video jika ada
                 if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
                 drawCombinedImage();
@@ -363,12 +382,10 @@
         function handleVideoFile(fileURL) {
             userVideo.src = fileURL;
             userVideo.onloadedmetadata = () => {
-                // Setelah metadata dimuat, set scale dan mulai play
                 resetImageState(userVideo.videoWidth, userVideo.videoHeight);
-                userVideo.currentTime = 0; // Mulai dari awal
+                userVideo.currentTime = 0;
                 userVideo.play();
                 
-                // Mulai looping canvas untuk video
                 if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 animateCanvas();
                 
@@ -390,7 +407,7 @@
         }
         
         // ====================================
-        // === FUNGSI DOWNLOAD (DIUBAH) ===
+        // === FUNGSI DOWNLOAD ===
         // ====================================
 
         function downloadImage() {
@@ -403,13 +420,11 @@
                 return;
             }
             
-            // Hentikan animasi saat download (jika media adalah video)
             if (mediaType === 'video' && animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
             
-            // Pastikan canvas diperbarui dengan frame terakhir sebelum download
             drawCombinedImage(); 
             
             const imageURL = canvas.toDataURL("image/png");
@@ -423,7 +438,6 @@
             link.click();
             document.body.removeChild(link);
 
-            // Efek tombol sukses
             downloadBtn.classList.remove('btn-orange-gradient');
             downloadBtn.classList.add('btn-success-gradient');
             downloadBtn.innerHTML = (mediaType === 'video') ? '✅ Frame Video Berhasil di Unduh' : '✅ Gambar Sudah di Unduh';
@@ -473,7 +487,6 @@
             let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
             if (!mediaSource) return;
             
-            // Jika video berjalan saat start drag, pause videonya
             if(mediaType === 'video' && !userVideo.paused) {
                 userVideo.pause();
             }
@@ -554,10 +567,9 @@
                 imageState.isPinching = false;
                 imageState.initialDistance = 0;
             }
-            // Jika video di-pause untuk drag/zoom, lanjutkan play setelah end
             if(mediaType === 'video' && userVideo.paused) {
                  userVideo.play();
-                 animateCanvas(); // Lanjutkan loop
+                 animateCanvas();
             }
             drawCombinedImage();
         }
@@ -565,7 +577,6 @@
              let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
             if (!mediaSource) return;
             
-            // Jika video berjalan saat zoom, pause videonya
             if(mediaType === 'video' && !userVideo.paused) {
                 userVideo.pause();
             }
@@ -597,7 +608,6 @@
             }
             drawCombinedImage();
             
-            // Lanjutkan play setelah zoom selesai (jika video)
             if(mediaType === 'video' && userVideo.paused) {
                  userVideo.play();
                  animateCanvas();
