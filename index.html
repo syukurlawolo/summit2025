@@ -22,6 +22,7 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            /* Outer background tetap dark (#343a40) */
             padding: 0 1rem;
             padding-bottom: 0.5rem;
             max-width: 360px;
@@ -47,11 +48,40 @@
         /* === STYLE UTAMA APLIKASI === */
         /* ============================== */
 
-        body { font-family: 'Poppins', sans-serif; background-color: #343a40; min-height: 100vh; padding-top: 0; padding-bottom: 0; margin: 0; color: white; }
-        .page-header { margin-bottom: 1rem !important; padding-top: 0; }
-        @media (min-width: 577px) { .main-container.allowed { padding-top: 2rem; } .page-header { padding-top: 0; } }
-        @media (max-width: 576px) { .page-header { padding-top: 0; } }
-        .page-header p { margin-top: 0.1rem !important; margin-bottom: 1rem !important; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #343a40; /* Outer Dark Background */
+            min-height: 100vh; 
+            padding-top: 0; 
+            padding-bottom: 0; 
+            margin: 0; 
+            color: white; 
+        }
+
+        /* [UPDATED UI FIX] Inner Card dengan Gradient Ungu-Oranye */
+        .inner-card {
+            width: 100%;
+            /* NEW Gradient: Purple-Magenta-Orange */
+            background-image: linear-gradient(135deg, #7e22ce 0%, #a855f7 50%, #FF6F00 100%); 
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* HEADER (Di luar inner card di mobile, tetapi stylenya dipertahankan) */
+        .page-header { margin-bottom: 1rem !important; padding-top: 0; text-align: center; }
+        
+        @media (min-width: 577px) { 
+            .main-container.allowed { padding-top: 2rem; } 
+            .page-header { padding-top: 0; } 
+        }
+        @media (max-width: 576px) { 
+            .page-header { padding-top: 0; } 
+        }
+        /* Memastikan warna teks header konsisten dan terbaca */
+        .page-header h1 { color: #FFD600; /* Tetap kuning terang */ }
+        .page-header p { color: #e0e0e0; /* Sedikit lebih terang dari default text-secondary */ margin-top: 0.1rem !important; margin-bottom: 1rem !important; }
         
         #twibbonCanvas {
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); border-radius: 1rem;
@@ -84,6 +114,26 @@
         @media (max-width: 576px) { .floating-scroll-indicator { display: block; } }
         .floating-scroll-indicator .scroll-icon { display: block; margin: 0 auto; width: 24px; height: 36px; fill: white; opacity: 0.8; transition: opacity 0.3s; }
         .floating-scroll-indicator:hover .scroll-icon { opacity: 1; }
+
+        /* Style untuk thumbnail twibbon */
+        .img-twibbon-selector {
+            width: 120px; 
+            height: 213px; 
+            object-fit: cover;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .img-twibbon-selector:hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+        .img-twibbon-selector.active {
+            border: 3px solid #FFD600; 
+            box-shadow: 0 0 15px rgba(255, 214, 0, 0.8);
+        }
     </style>
 </head>
 <body>
@@ -100,46 +150,72 @@
     <div class="main-container" id="mainContent">
 
         <header class="text-center page-header w-100">
-            <h1 class="h3 fw-bold" style="color: #FFD600;">GKII Twibbon Maker</h1>
+            <h1 class="h3 fw-bold">GKII Twibbon Maker</h1>
             <p class="text-secondary mt-1">Unggah **Foto atau Video** Anda, atur posisinya, dan gabungkan!</p>
         </header>
-
-        <div class="mb-3 w-100">
-            <label class="form-label fs-5 text-light">The Multiplier, Ready? Unggah Foto/Video Terbaik Anda</label>
-            <input 
-                type="file" 
-                id="photoUpload" 
-                accept="image/*,video/*" 
-                class="form-control custom-file-input"
-                onchange="handleImageUpload(event)"
-            />
-        </div>
-
-        <div id="canvasArea" class="d-flex justify-content-center mx-auto mb-3 w-100">
-            <div class="container-twibbon">
-                <canvas id="twibbonCanvas"></canvas>
-            </div>
-        </div>
         
-        <div class="text-center w-100">
-            <button 
-                id="downloadButton" 
-                onclick="downloadImage()" 
-                disabled 
-                class="btn btn-lg btn-orange-gradient w-100 mb-2"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                </svg>
-                Download Gambar
-            </button>
-            <p id="statusMessage" class="mt-3 text-danger d-none">
-                Pilih foto/video Anda terlebih dahulu untuk mengaktifkan tombol unduh.
-            </p>
-            <p id="controlTip" class="mt-2 small" style="color: #FFD600;">
-                (Geser foto/video dengan jari, gunakan pinch untuk Zoom)
-            </p>
+        <div class="inner-card">
+
+            <div id="twibbonSelector" class="w-100 text-center mb-4">
+                <label class="form-label fs-5 text-light mb-3">Langkah 1: Pilih Desain Twibbon Anda</label>
+                <div class="d-flex justify-content-around">
+                    <img 
+                        id="imgTwibbon1" 
+                        src="GKII.png" 
+                        alt="Twibbon 1" 
+                        class="img-twibbon-selector" 
+                        onclick="selectTwibbon('twibbon1')"
+                    />
+                    <img 
+                        id="imgTwibbon2" 
+                        src="GKII2.png" 
+                        alt="Twibbon 2" 
+                        class="img-twibbon-selector" 
+                        onclick="selectTwibbon('twibbon2')"
+                    />
+                </div>
+            </div>
+
+            <div id="twibbonContent" class="w-100" style="display: none;">
+                
+                <div class="mb-3 w-100">
+                    <label class="form-label fs-5 text-light">Langkah 2: Unggah Foto/Video Terbaik Anda</label>
+                    <input 
+                        type="file" 
+                        id="photoUpload" 
+                        accept="image/*,video/*" 
+                        class="form-control custom-file-input"
+                        onchange="handleImageUpload(event)"
+                    />
+                </div>
+
+                <div id="canvasArea" class="d-flex justify-content-center mx-auto mb-3 w-100">
+                    <div class="container-twibbon">
+                        <canvas id="twibbonCanvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="text-center w-100">
+                    <button 
+                        id="downloadButton" 
+                        onclick="downloadImage()" 
+                        disabled 
+                        class="btn btn-lg btn-orange-gradient w-100 mb-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download Gambar
+                    </button>
+                    <p id="statusMessage" class="mt-3 text-danger d-none">
+                        Pilih foto/video Anda terlebih dahulu untuk mengaktifkan tombol unduh.
+                    </p>
+                    <p id="controlTip" class="mt-2 small" style="color: #FFD600;">
+                        (Geser foto/video dengan jari, gunakan pinch untuk Zoom)
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -157,16 +233,19 @@
         // === KONFIGURASI DAN INIALISASI ===
         // ===================================
         
-        // PASTIKAN NAMA FILE BENAR: GKII.png harus berada di folder yang sama dengan file HTML ini.
-        const TWIBBON_URL = 'GKII.png'; 
+        const TWIBBON_URLS = {
+            'twibbon1': 'GKII.png', 
+            'twibbon2': 'GKII2.png'
+        };
         const CANVAS_WIDTH = 1080; 
         const CANVAS_HEIGHT = 1920; 
         const ZOOM_SPEED = 0.05; 
 
+        let selectedTwibbon = null;
         let mediaType = 'image';
         let userVideo = null; 
         let userPhoto = null;
-        let twibbonFrame = null; // Ini adalah variabel untuk gambar twibbon
+        let twibbonFrame = null;
         let isTwibbonLoaded = false;
         let animationFrameId = null;
         
@@ -175,10 +254,10 @@
             isPinching: false, initialDistance: 0, lastX: 0, lastY: 0
         };
 
-        let canvas, ctx, downloadBtn, statusMsg, controlTip, floatingScrollPrompt;
+        let canvas, ctx, downloadBtn, statusMsg, controlTip, floatingScrollPrompt, twibbonContent;
 
         // =======================================
-        // === FUNGSI UTAMA KONTROL AKSES (JS) ===
+        // === FUNGSI KONTROL AKSES & DETEKSI ===
         // =======================================
 
         function isMobileOrTablet() {
@@ -192,12 +271,26 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             const mainContent = document.getElementById('mainContent');
             const deniedMessage = document.getElementById('access-denied-message');
+            twibbonContent = document.getElementById('twibbonContent'); 
             userVideo = document.getElementById('userVideoElement');
             
             if (isMobileOrTablet()) {
                 mainContent.classList.add('allowed'); 
                 deniedMessage.classList.remove('show'); 
-                initializeTwibbon();
+                
+                // Inisialisasi DOM setelah lolos check akses
+                canvas = document.getElementById('twibbonCanvas');
+                ctx = canvas.getContext('2d');
+                downloadBtn = document.getElementById('downloadButton');
+                statusMsg = document.getElementById('statusMessage');
+                controlTip = document.getElementById('controlTip');
+                floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
+                
+                canvas.width = CANVAS_WIDTH;
+                canvas.height = CANVAS_HEIGHT;
+                
+                drawCombinedImage(); 
+
             } else {
                 mainContent.classList.remove('allowed'); 
                 deniedMessage.classList.add('show'); 
@@ -205,55 +298,67 @@
             }
         });
         
-        // ========================================
-        // === FUNGSI INISIALISASI TWIBBON UTUH ===
-        // ========================================
+        // ===================================
+        // === FUNGSI PEMILIHAN TWIBBON (UPDATE) ===
+        // ===================================
 
-        function initializeTwibbon() {
-            canvas = document.getElementById('twibbonCanvas');
-            ctx = canvas.getContext('2d');
-            downloadBtn = document.getElementById('downloadButton');
-            statusMsg = document.getElementById('statusMessage');
-            controlTip = document.getElementById('controlTip');
-            floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
-            
-            canvas.width = CANVAS_WIDTH;
-            canvas.height = CANVAS_HEIGHT;
+        function selectTwibbon(key) {
+            // Hentikan animasi jika ada
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
 
-            // Memanggil pemuatan Twibbon Frame di sini
-            loadTwibbonFrame(); 
-            drawCombinedImage(); 
+            // Atur kelas aktif pada gambar
+            document.querySelectorAll('.img-twibbon-selector').forEach(img => img.classList.remove('active'));
+            document.getElementById(`imgTwibbon${key.slice(-1)}`).classList.add('active');
+
+            selectedTwibbon = TWIBBON_URLS[key];
+            loadTwibbonFrame();
             
-            // Pasang semua Event Listeners untuk interaksi
-            canvas.addEventListener('mousedown', handleStart);
-            canvas.addEventListener('mousemove', handleMove);
-            canvas.addEventListener('mouseup', handleEnd);
-            canvas.addEventListener('mouseleave', handleEnd);
-            canvas.addEventListener('touchstart', handleStart, { passive: false });
-            canvas.addEventListener('touchmove', handleMove, { passive: false });
-            canvas.addEventListener('touchend', handleEnd);
-            canvas.addEventListener('wheel', handleZoom, { passive: false });
-            checkScrollPosition(); 
-            window.addEventListener('scroll', checkScrollPosition);
+            // Tampilkan konten Twibbon Maker yang sebenarnya
+            twibbonContent.style.display = 'block';
+
+            // Reset media state agar tampilan canvas bersih
+            userPhoto = null;
+            if (userVideo) {
+                userVideo.pause();
+                userVideo.removeAttribute('src');
+            }
+            mediaType = 'image'; 
+            
+            // Pasang Event Listener hanya sekali setelah Twibbon pertama dipilih
+            if (!canvas.listenersInitialized) {
+                canvas.addEventListener('mousedown', handleStart);
+                canvas.addEventListener('mousemove', handleMove);
+                canvas.addEventListener('mouseup', handleEnd);
+                canvas.addEventListener('mouseleave', handleEnd);
+                canvas.addEventListener('touchstart', handleStart, { passive: false });
+                canvas.addEventListener('touchmove', handleMove, { passive: false });
+                canvas.addEventListener('touchend', handleEnd);
+                canvas.addEventListener('wheel', handleZoom, { passive: false });
+                canvas.listenersInitialized = true;
+            }
+            
+             drawCombinedImage(); 
         }
-        
+
         // =========================================
         // === FUNGSI PEMUATAN TWIBBON FRAME (FIX) ===
         // =========================================
         function loadTwibbonFrame() {
+            if (!selectedTwibbon) return; 
+
             twibbonFrame = new Image();
             twibbonFrame.crossOrigin = "Anonymous"; 
             twibbonFrame.onload = () => {
                 isTwibbonLoaded = true;
-                // Tidak perlu showMessage di sini, cukup panggil draw untuk menampilkan
                 drawCombinedImage(); 
             };
             twibbonFrame.onerror = () => {
                 isTwibbonLoaded = false;
-                showMessage("ERROR: Gagal memuat bingkai Twibbon. Pastikan GKII.png ada di lokasi yang benar.", true);
+                showMessage(`ERROR: Gagal memuat bingkai Twibbon dari ${selectedTwibbon}. Pastikan file ada.`, true);
                 twibbonFrame = null; 
             };
-            twibbonFrame.src = TWIBBON_URL;
+            twibbonFrame.src = selectedTwibbon;
         }
 
 
@@ -265,10 +370,8 @@
             drawCombinedImage();
             
             if (mediaType === 'video' && !userVideo.paused && !userVideo.ended) {
-                // Lanjutkan animasi hanya jika video sedang berjalan
                 animationFrameId = requestAnimationFrame(animateCanvas);
             } else if (mediaType === 'video') {
-                // Jika video berhenti atau pause, hentikan requestAnimationFrame
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
@@ -319,7 +422,7 @@
                 ctx.fillStyle = '#adb5bd';
                 ctx.textAlign = 'center';
                 ctx.font = '36px Poppins'; 
-                ctx.fillText('Unggah foto/video Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                ctx.fillText('Pilih media Anda di Langkah 2', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 downloadBtn.disabled = true;
                 controlTip.classList.add('d-none');
                 canvas.style.cursor = 'default';
@@ -329,24 +432,22 @@
             if (isTwibbonLoaded && twibbonFrame) {
                 ctx.drawImage(twibbonFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             }
-
-            // Jika video berjalan, panggil frame berikutnya
-            if (mediaType === 'video' && userVideo.paused && !userVideo.ended && animationFrameId === null) {
-                // Jika video paused, drawCombinedImage dipanggil secara manual dari event handler
-            }
         }
         
         // ========================================
-        // === FUNGSI UPLOAD MEDIA BARU (GABUNG) ===
+        // === FUNGSI UPLOAD MEDIA (GABUNG) ===
         // ========================================
 
         function handleImageUpload(event) {
+            if (!selectedTwibbon) {
+                 showMessage("Mohon pilih desain Twibbon di Langkah 1 terlebih dahulu!", true);
+                 return;
+            }
             const file = event.target.files[0];
             if (!file) return;
 
             const fileURL = URL.createObjectURL(file);
 
-            // Tentukan jenis file
             if (file.type.startsWith('image/')) {
                 mediaType = 'image';
                 handleImageFile(fileURL);
@@ -407,7 +508,7 @@
         }
         
         // ====================================
-        // === FUNGSI DOWNLOAD ===
+        // === FUNGSI DOWNLOAD & INTERAKSI ===
         // ====================================
 
         function downloadImage() {
@@ -457,7 +558,7 @@
             showMessage("Twibbon berhasil diunduh!", false);
         }
         
-        // --- FUNGSI PELENGKAP LAINNYA (INTERAKSI DITAMBAHKAN KEMBALI) ---
+        // --- FUNGSI INTERAKSI (DIPERTAHANKAN) ---
         
         function scrollToDownloadButton() {
             if (!downloadBtn || !floatingScrollPrompt) return;
@@ -487,9 +588,7 @@
             let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
             if (!mediaSource) return;
             
-            if(mediaType === 'video' && !userVideo.paused) {
-                userVideo.pause();
-            }
+            if(mediaType === 'video' && !userVideo.paused) { userVideo.pause(); }
 
             const rect = canvas.getBoundingClientRect();
             const clientX = event.touches ? event.touches[0].clientX : event.clientX;
@@ -574,12 +673,10 @@
             drawCombinedImage();
         }
         function handleZoom(event) {
-             let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
+            let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
             if (!mediaSource) return;
             
-            if(mediaType === 'video' && !userVideo.paused) {
-                userVideo.pause();
-            }
+            if(mediaType === 'video' && !userVideo.paused) { userVideo.pause(); }
 
             event.preventDefault();
 
