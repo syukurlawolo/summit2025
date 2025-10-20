@@ -4,199 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twibbon GKII Summit 2025</title>
-    <!-- Ganti Tailwind dengan Bootstrap 5 CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Diperbarui: Mengganti Inter dengan Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Mengatur font utama dan gradient sesuai permintaan (Purple, Orange, Yellow) */
-        body {
-            font-family: 'Poppins', sans-serif; /* Diperbarui ke Poppins */
-            /* Gradient: Deep Purple (#4A148C), Deep Orange (#FF6F00), Amber (#FFD600) */
-            background: linear-gradient(135deg, #4A148C, #FF6F00, #FFD600); 
+        /* ==================================== */
+        /* === KONTROL AKSES DAN PEMBATASAN === */
+        /* ==================================== */
+        
+        /* KRUSIAL: Sembunyikan Konten Utama secara ketat di awal load */
+        .main-container {
+            display: none !important; 
+        }
+        .main-container.allowed {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
-            padding-top: 2rem; /* Tambahkan padding atas/bawah untuk margin */
-            padding-bottom: 2rem;
-        }
-
-        /* Styling untuk Card Utama (Background gelap semi-transparan) */
-        .twibbon-card {
-            background-color: rgba(33, 37, 41, 0.95); /* Dark background semi-transparan */
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            max-width: 360px; /* Diperkecil dari 400px agar lebih pas di mobile */
-            width: 100%;
-            border: 1px solid #7C3AED; /* Border ungu */
-        }
-        
-        /* Style untuk Canvas Pratinjau */
-        #twibbonCanvas {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            border-radius: 1rem;
-            background-color: #495057; /* Warna abu-abu gelap untuk area foto kosong */
+            padding: 0 1rem;
+            padding-bottom: 0.5rem;
+            max-width: 360px;
             margin: 0 auto;
-            display: block;
-            border: 4px solid #FF6F00; /* Border Orange */
-            cursor: default; 
-            touch-action: none; /* Mencegah scroll saat interaksi geser/zoom di Canvas */
         }
 
-        /* Container Rasio 9:16 Responsif (Menggunakan Padding Hack) */
-        .container-twibbon {
-            width: 100%;
-            padding-top: 177.77%; /* Rasio 9:16 (16/9 * 100%) */
-            position: relative;
+        /* STYLE UNTUK PESAN AKSES DITOLAK */
+        #access-denied-message {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #212529; z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px; color: white;
+            font-family: 'Poppins', sans-serif;
         }
+
+        #access-denied-message.show { display: flex; }
+
+        /* Elemen video tersembunyi */
+        #userVideoElement { display: none; }
+        
+        /* ============================== */
+        /* === STYLE UTAMA APLIKASI === */
+        /* ============================== */
+
+        body { font-family: 'Poppins', sans-serif; background-color: #343a40; min-height: 100vh; padding-top: 0; padding-bottom: 0; margin: 0; color: white; }
+        .page-header { margin-bottom: 1rem !important; padding-top: 0; }
+        @media (min-width: 577px) { .main-container.allowed { padding-top: 2rem; } .page-header { padding-top: 0; } }
+        @media (max-width: 576px) { .page-header { padding-top: 0; } }
+        .page-header p { margin-top: 0.1rem !important; margin-bottom: 1rem !important; }
+        
         #twibbonCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            aspect-ratio: 9 / 16; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); border-radius: 1rem;
+            background-color: #495057; margin: 0 auto; display: block;
+            border: 4px solid #FF6F00; cursor: default; touch-action: none;
         }
-
-        /* Custom file input style */
-        .custom-file-input::-webkit-file-upload-button {
-            visibility: hidden;
-        }
+        .container-twibbon { width: 100%; padding-top: 177.77%; position: relative; }
+        #twibbonCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; aspect-ratio: 9 / 16; }
+        
+        /* Custom File Input (accept diperbaiki di HTML) */
+        .custom-file-input::-webkit-file-upload-button { visibility: hidden; }
         .custom-file-input::before {
-            content: 'Pilih File';
-            display: inline-block;
-            /* Menggunakan warna solid Orange untuk tombol Upload */
-            background: #FF6F00; 
-            border-radius: 0 !important; /* Jamin tidak ada radius */
-            padding: 0.5rem 1.5rem;
-            outline: none;
-            white-space: nowrap;
-            -webkit-user-select: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: white; 
-            transition: all 0.3s;
-            border: none !important; 
-            box-shadow: none !important;
+            content: 'Pilih File'; display: inline-block; background: #FF6F00; border-radius: 0 !important;
+            padding: 0.5rem 1.5rem; outline: none; white-space: nowrap; -webkit-user-select: none;
+            cursor: pointer; font-weight: 600; color: white; transition: all 0.3s;
+            border: none !important; box-shadow: none !important;
         }
-        .custom-file-input:hover::before {
-            background: #FFD600; /* Hover menjadi kuning */
-            color: #1f2937; /* Dark text on hover */
-        }
-        /* Memastikan input file sendiri tidak memiliki radius atau background yang mengganggu */
-        .form-control.custom-file-input {
-            border: none !important; 
-            padding: 0;
-            background-color: transparent;
-            border-radius: 0 !important; 
-            box-shadow: none !important;
-        }
-        /* Menghapus focus ring default Bootstrap pada penampung input */
-        .form-control.custom-file-input:focus {
-            box-shadow: none !important;
-            border-color: transparent !important;
-        }
-
-
-        /* --- GRADIENT BARU UNTUK TOMBOL DOWNLOAD (DIUBAH: Hapus Radius & Shadow) --- */
-        /* Default: Orange Gradient */
-        .btn-orange-gradient {
-            background-image: linear-gradient(45deg, #FF6F00, #FFD600); /* Orange-Yellow Gradient */
-            border: none;
-            border-radius: 0 !important; /* Hapus radius */
-            transition: all 0.3s ease;
-            box-shadow: none !important; /* Hapus shadow */
-            font-weight: bold;
-            color: #1f2937; /* Dark text for contrast */
-        }
-        .btn-orange-gradient:hover:not(:disabled) {
-            background-image: linear-gradient(45deg, #FFD600, #FF6F00);
-            box-shadow: none !important;
-            transform: none; /* Hapus efek angkat */
-        }
-
-        /* Success State: Green Gradient */
-        .btn-success-gradient {
-            background-image: linear-gradient(45deg, #10B981, #059669); /* Green Gradient */
-            border: none;
-            border-radius: 0 !important; /* Hapus radius */
-            transition: all 0.3s ease;
-            box-shadow: none !important; /* Hapus shadow */
-            font-weight: bold;
-            color: white;
-        }
-        .btn-success-gradient:hover:not(:disabled) {
-            background-image: linear-gradient(45deg, #059669, #10B981);
-            box-shadow: none !important;
-            transform: none; /* Hapus efek angkat */
-        }
-
-        /* NEW: Style untuk Floating Scroll Indicator (DIUBAH TOTAL) */
-        .floating-scroll-indicator {
-            position: fixed;
-            bottom: 80px; 
-            right: 15px;
-            z-index: 1050; 
-            
-            /* Dihapus: background, border-radius, box-shadow, animation */
-            background: none; 
-            padding: 5px; /* Padding minimal */
-            cursor: pointer;
-            display: none; /* Default sembunyikan */
-        }
-        /* Tampilkan hanya di layar kecil (Mobile) */
-        @media (max-width: 576px) {
-            .floating-scroll-indicator {
-                display: block;
-            }
-        }
-
-        /* NEW: Style untuk Ikon Panah (Putih, Jelas) */
-        .floating-scroll-indicator .scroll-icon {
-            display: block;
-            margin: 0 auto;
-            width: 24px; 
-            height: 36px; /* Ikon panah vertikal yang jelas */
-            fill: white; /* Warna Putih solid */
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        .floating-scroll-indicator:hover .scroll-icon {
-            opacity: 1;
-        }
+        .custom-file-input:hover::before { background: #FFD600; color: #1f2937; }
+        .form-control.custom-file-input { border: 0 !important; padding: 0 !important; background-color: transparent !important; border-radius: 0 !important; box-shadow: none !important; }
+        .form-control.custom-file-input:focus { box-shadow: none !important; border-color: transparent !important; }
         
+        /* Gradient Buttons */
+        .btn-orange-gradient { background-image: linear-gradient(45deg, #FF6F00, #FFD600); border: none; border-radius: 0 !important; transition: all 0.3s ease; box-shadow: none !important; font-weight: bold; color: #1f2937; }
+        .btn-orange-gradient:hover:not(:disabled) { background-image: linear-gradient(45deg, #FFD600, #FF6F00); box-shadow: none !important; transform: none; }
+        .btn-success-gradient { background-image: linear-gradient(45deg, #10B981, #059669); border: none; border-radius: 0 !important; transition: all 0.3s ease; box-shadow: none !important; font-weight: bold; color: white; }
+        .btn-success-gradient:hover:not(:disabled) { background-image: linear-gradient(45deg, #059669, #10B981); box-shadow: none !important; transform: none; }
+        
+        /* Scroll Indicator */
+        .floating-scroll-indicator { position: fixed; bottom: 80px; right: 15px; z-index: 1050; background: none; padding: 5px; cursor: pointer; display: none; }
+        @media (max-width: 576px) { .floating-scroll-indicator { display: block; } }
+        .floating-scroll-indicator .scroll-icon { display: block; margin: 0 auto; width: 24px; height: 36px; fill: white; opacity: 0.8; transition: opacity 0.3s; }
+        .floating-scroll-indicator:hover .scroll-icon { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div class="twibbon-card text-white mx-auto my-5">
-        <header class="text-center mb-4">
-            <!-- Judul dengan warna Kuning dari gradient -->
+    <video id="userVideoElement" preload="auto" crossorigin="anonymous" playsinline muted loop></video>
+
+    <div id="access-denied-message">
+        <h2 style="color: #FF6F00;">Akses Dibatasi 🚫</h2>
+        <p class="lead">Halaman ini **hanya** dapat diakses melalui browser di perangkat Mobile (Android/iPhone/Tablet).</p>
+        <p>Silakan gunakan perangkat seluler Anda.</p>
+        <p class="small text-muted mt-4">Terima kasih atas pengertian Anda.</p>
+    </div>
+
+    <div class="main-container" id="mainContent">
+
+        <header class="text-center page-header w-100">
             <h1 class="h3 fw-bold" style="color: #FFD600;">GKII Twibbon Maker</h1>
-            <p class="text-secondary mt-2">Unggah foto Anda, atur posisinya, dan gabungkan!</p>
+            <p class="text-secondary mt-1">Unggah **Foto atau Video** Anda, atur posisinya, dan gabungkan!</p>
         </header>
 
-        <!-- Area Input Foto -->
-        <div class="mb-4">
-            <label class="form-label fs-5 text-light">Langkah 1: Unggah Foto Terbaik Anda</label>
+        <div class="mb-3 w-100">
+            <label class="form-label fs-5 text-light">The Multiplier, Ready? Unggah Foto/Video Terbaik Anda</label>
             <input 
                 type="file" 
                 id="photoUpload" 
-                accept="image/*" 
+                accept="image/*,video/*" 
                 class="form-control custom-file-input"
                 onchange="handleImageUpload(event)"
             />
         </div>
 
-        <!-- Area Canvas (Pratinjau) -->
-        <div id="canvasArea" class="d-flex justify-content-center mx-auto mb-4">
+        <div id="canvasArea" class="d-flex justify-content-center mx-auto mb-3 w-100">
             <div class="container-twibbon">
-                <!-- Canvas akan diatur ukurannya oleh CSS agar mengikuti rasio 9:16 -->
                 <canvas id="twibbonCanvas"></canvas>
             </div>
         </div>
         
-        <!-- Area Tombol Download -->
-        <div class="text-center">
+        <div class="text-center w-100">
             <button 
                 id="downloadButton" 
                 onclick="downloadImage()" 
@@ -209,150 +134,155 @@
                 </svg>
                 Download Gambar
             </button>
-            <!-- Menggunakan kelas Bootstrap d-none (display: none) dan text-danger -->
             <p id="statusMessage" class="mt-3 text-danger d-none">
-                Pilih foto Anda terlebih dahulu untuk mengaktifkan tombol unduh.
+                Pilih foto/video Anda terlebih dahulu untuk mengaktifkan tombol unduh.
             </p>
-            <!-- Menggunakan warna Kuning (#FFD600) untuk tips kontrol -->
             <p id="controlTip" class="mt-2 small" style="color: #FFD600;">
-                (Geser foto dengan mouse/jari, gunakan scroll/pinch untuk Zoom)
+                (Geser foto/video dengan jari, gunakan pinch untuk Zoom)
             </p>
         </div>
-
     </div>
 
-    <!-- NEW: Floating Scroll Indicator for Mobile -->
     <div id="floatingScrollPrompt" class="floating-scroll-indicator" onclick="scrollToDownloadButton()">
-        <!-- Ikon panah atas-bawah yang jelas dan sederhana (Putih) -->
         <svg class="scroll-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-            <!-- Ikon Panah Atas-Bawah sederhana -->
-            <path d="M8 12.5l-4-4h8l-4 4z"/> <!-- Panah Bawah -->
-            <path d="M8 3.5l-4 4h8l-4-4z"/> <!-- Panah Atas (Dibuat opacity rendah jika ingin terlihat) -->
+            <path d="M8 12.5l-4-4h8l-4 4z"/> 
+            <path d="M8 3.5l-4 4h8l-4-4z" opacity="0.4"/> 
         </svg>
     </div>
 
-    <!-- Bootstrap JS Bundle (Opsional, tapi praktik terbaik) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // --- KONFIGURASI TWIBBON ---
-        const TWIBBON_URL = 'GKII.png'; 
+        // ===================================
+        // === KONFIGURASI DAN INIALISASI ===
+        // ===================================
         
-        // RESOLUSI DOWNLOAD SESUAI ASLI TWIBBON (9:16)
+        const TWIBBON_URL = 'GKII.png'; 
         const CANVAS_WIDTH = 1080; 
         const CANVAS_HEIGHT = 1920; 
-        const ZOOM_SPEED = 0.05; // Kecepatan zoom diubah sedikit agar lebih halus
+        const ZOOM_SPEED = 0.05; 
 
-        // Inisialisasi variabel global dan elemen DOM
-        const canvas = document.getElementById('twibbonCanvas');
-        const ctx = canvas.getContext('2d');
-        const downloadBtn = document.getElementById('downloadButton');
-        const statusMsg = document.getElementById('statusMessage');
-        const controlTip = document.getElementById('controlTip');
-        const floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
-        const canvasArea = document.getElementById('canvasArea'); // Ambil elemen area Canvas
-
+        let mediaType = 'image';
+        let userVideo = null; 
         let userPhoto = null;
         let twibbonFrame = null;
         let isTwibbonLoaded = false;
+        let animationFrameId = null;
         
-        // Variabel untuk interaksi (Geser/Zoom)
         let imageState = {
-            offsetX: 0,
-            offsetY: 0,
-            scale: 1.0, 
-            isDragging: false,
-            isPinching: false,
-            initialDistance: 0,
-            lastX: 0,
-            lastY: 0
+            offsetX: 0, offsetY: 0, scale: 1.0, isDragging: false,
+            isPinching: false, initialDistance: 0, lastX: 0, lastY: 0
         };
-        
-        // Mengatur dimensi internal Canvas untuk resolusi gambar output (1080x1920)
-        canvas.width = CANVAS_WIDTH;
-        canvas.height = CANVAS_HEIGHT;
 
-        // Fungsi untuk mengarahkan pengguna ke tombol download
-        function scrollToDownloadButton() {
-            // Target scroll ke Tombol Download itu sendiri
-            downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            
-            // Sembunyikan prompt setelah diklik
-            floatingScrollPrompt.style.display = 'none';
+        let canvas, ctx, downloadBtn, statusMsg, controlTip, floatingScrollPrompt;
+
+        // =======================================
+        // === FUNGSI UTAMA KONTROL AKSES (JS) ===
+        // =======================================
+
+        function isMobileOrTablet() {
+            const ua = navigator.userAgent;
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Tablet/i.test(ua);
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isSmallScreen = window.innerWidth <= 1024; 
+            return isMobileUA || (hasTouch && isSmallScreen);
         }
 
-        // Fungsi untuk mendapatkan koordinat mouse/touch relatif terhadap canvas
-        function getCanvasCoords(event) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const mainContent = document.getElementById('mainContent');
+            const deniedMessage = document.getElementById('access-denied-message');
+            userVideo = document.getElementById('userVideoElement');
             
-            if (event.touches) {
-                clientX = event.touches[0].clientX;
-                clientY = event.touches[0].clientY;
+            if (isMobileOrTablet()) {
+                mainContent.classList.add('allowed'); 
+                deniedMessage.classList.remove('show'); 
+                initializeTwibbon();
             } else {
-                clientX = event.clientX;
-                clientY = event.clientY;
+                mainContent.classList.remove('allowed'); 
+                deniedMessage.classList.add('show'); 
+                alert("PERINGATAN: Halaman ini hanya bisa diakses menggunakan browser di perangkat Mobile (Android/iPhone/Tablet). Akses di browser desktop dibatasi.");
             }
+        });
+        
+        // ========================================
+        // === FUNGSI INISIALISASI TWIBBON UTUH ===
+        // ========================================
 
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        function initializeTwibbon() {
+            canvas = document.getElementById('twibbonCanvas');
+            ctx = canvas.getContext('2d');
+            downloadBtn = document.getElementById('downloadButton');
+            statusMsg = document.getElementById('statusMessage');
+            controlTip = document.getElementById('controlTip');
+            floatingScrollPrompt = document.getElementById('floatingScrollPrompt');
+            
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
 
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
-        }
-
-        // Fungsi untuk menampilkan pesan status (Diperbarui untuk Bootstrap)
-        function showMessage(message, isError = false) {
-            statusMsg.textContent = message;
-            statusMsg.classList.remove('d-none', 'text-danger', 'text-success'); 
-            statusMsg.classList.add(isError ? 'text-danger' : 'text-success'); 
-            if (!isError) {
-                setTimeout(() => statusMsg.classList.add('d-none'), 3000);
-            }
-        }
-
-        // --- Memuat Gambar Twibbon ---
-        function loadTwibbonFrame() {
-            twibbonFrame = new Image();
-            twibbonFrame.crossOrigin = "Anonymous"; 
-            twibbonFrame.onload = () => {
-                isTwibbonLoaded = true;
-                showMessage("Bingkai Twibbon berhasil dimuat.", false);
-                drawCombinedImage(); 
-            };
-            twibbonFrame.onerror = () => {
-                isTwibbonLoaded = false;
-                showMessage("ERROR: Gagal memuat gambar Twibbon. Pastikan file Twibbon ada.", true);
-                console.error("Gagal memuat Twibbon dari:", TWIBBON_URL);
-                twibbonFrame = null; 
-            };
-            twibbonFrame.src = TWIBBON_URL;
+            loadTwibbonFrame();
+            drawCombinedImage(); 
+            
+            // Pasang semua Event Listeners untuk interaksi
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mouseleave', handleEnd);
+            canvas.addEventListener('touchstart', handleStart, { passive: false });
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchend', handleEnd);
+            canvas.addEventListener('wheel', handleZoom, { passive: false });
+            checkScrollPosition(); 
+            window.addEventListener('scroll', checkScrollPosition);
         }
         
-        // --- Menggambar Foto Pengguna dan Twibbon ke Canvas ---
-        function drawCombinedImage() {
-            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        // ==========================================
+        // === FUNGSI UTAMA DRAW DAN ANIMASI VIDEO ===
+        // ==========================================
+
+        function animateCanvas() {
+            drawCombinedImage();
             
-            // 1. Gambar Background/Placeholder Kosong
+            if (mediaType === 'video' && !userVideo.paused && !userVideo.ended) {
+                // Lanjutkan animasi hanya jika video sedang berjalan
+                animationFrameId = requestAnimationFrame(animateCanvas);
+            } else if (mediaType === 'video') {
+                // Jika video berhenti atau pause, hentikan requestAnimationFrame
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+        function drawCombinedImage() {
+            if (!ctx) return;
+            
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             ctx.fillStyle = '#495057'; 
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            let mediaSource = null;
+            let mediaNaturalWidth = 0;
+            let mediaNaturalHeight = 0;
 
-            // 2. Gambar Foto Pengguna (Jika sudah diunggah)
-            if (userPhoto) {
-                const photoWidth = userPhoto.width;
-                const photoHeight = userPhoto.height;
-                
-                const scaledWidth = photoWidth * imageState.scale;
-                const scaledHeight = photoHeight * imageState.scale;
+            if (mediaType === 'image' && userPhoto) {
+                mediaSource = userPhoto;
+                mediaNaturalWidth = userPhoto.width;
+                mediaNaturalHeight = userPhoto.height;
+            } else if (mediaType === 'video' && userVideo && userVideo.readyState >= 2) {
+                mediaSource = userVideo;
+                mediaNaturalWidth = userVideo.videoWidth;
+                mediaNaturalHeight = userVideo.videoHeight;
+            }
+
+            if (mediaSource) {
+                const scaledWidth = mediaNaturalWidth * imageState.scale;
+                const scaledHeight = mediaNaturalHeight * imageState.scale;
                 
                 const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
                 const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
 
                 ctx.drawImage(
-                    userPhoto, 
-                    0, 0, photoWidth, photoHeight,
+                    mediaSource, 
+                    0, 0, mediaNaturalWidth, mediaNaturalHeight,
                     initialX + imageState.offsetX,
                     initialY + imageState.offsetY,
                     scaledWidth,
@@ -360,217 +290,143 @@
                 );
 
                 downloadBtn.disabled = false;
+                downloadBtn.textContent = (mediaType === 'video') ? "Download Gambar (Frame Saat Ini)" : "Download Gambar";
                 controlTip.classList.remove('d-none');
                 canvas.style.cursor = imageState.isDragging ? 'grabbing' : 'grab';
             } else {
-                // Tampilkan teks instruksi jika belum ada foto
                 ctx.fillStyle = '#adb5bd';
                 ctx.textAlign = 'center';
                 ctx.font = '36px Poppins'; 
-                ctx.fillText('Unggah foto Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                ctx.fillText('Unggah foto/video Anda di sini', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 downloadBtn.disabled = true;
                 controlTip.classList.add('d-none');
                 canvas.style.cursor = 'default';
             }
             
-            // 3. Gambar Twibbon Frame (Diatas Foto Pengguna)
             if (isTwibbonLoaded && twibbonFrame) {
                 ctx.drawImage(twibbonFrame, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             }
-        }
 
-        // --- Event Listener untuk Geser (Drag) dan Sentuh (Touch) ---
-
-        function handleStart(event) {
-            if (!userPhoto) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-            
-            const isInsideCanvas = (
-                clientX >= rect.left && clientX <= rect.right &&
-                clientY >= rect.top && clientY <= rect.bottom
-            );
-
-            if (event.touches && event.touches.length === 2 && isInsideCanvas) {
-                event.preventDefault();
-                imageState.isDragging = false;
-                imageState.isPinching = true;
-                
-                const dx = event.touches[1].clientX - event.touches[0].clientX;
-                const dy = event.touches[1].clientY - event.touches[0].clientY;
-                imageState.initialDistance = Math.sqrt(dx * dx + dy * dy);
-            } else if (((event.touches && event.touches.length === 1) || event.buttons === 1) && isInsideCanvas) {
-                event.preventDefault();
-                imageState.isDragging = true;
-                imageState.isPinching = false;
-                
-                const coords = getCanvasCoords(event);
-                imageState.lastX = coords.x;
-                imageState.lastY = coords.y;
+            if (mediaType === 'video' && userVideo.paused && !userVideo.ended && animationFrameId === null) {
+                // Jika video di-pause, pastikan frame yang tampil adalah frame terakhir
+                // dan jangan mulai loop baru.
+                // Jika user menggeser video, kita perlu panggil drawCombinedImage() secara manual.
+                // Kita panggil animateCanvas() sekali untuk menarik frame saat ini.
+                // Logika utama requestAnimationFrame ada di luar.
             }
-            
-            drawCombinedImage();
         }
+        
+        // ========================================
+        // === FUNGSI UPLOAD MEDIA BARU (GABUNG) ===
+        // ========================================
 
-        function handleMove(event) {
-            if (!userPhoto) return;
-            
-            if (imageState.isPinching && event.touches && event.touches.length === 2) {
-                event.preventDefault();
-                const rect = canvas.getBoundingClientRect();
-                const oldScale = imageState.scale;
-                
-                const dx = event.touches[1].clientX - event.touches[0].clientX;
-                const dy = event.touches[1].clientY - event.touches[0].clientY;
-                const currentDistance = Math.sqrt(dx * dx + dy * dy);
-
-                const scaleMultiplier = currentDistance / imageState.initialDistance;
-                let newScale = oldScale * scaleMultiplier;
-                newScale = Math.max(0.1, Math.min(newScale, 5.0));
-
-                if (newScale !== oldScale) {
-                    
-                    const centerX_screen = (event.touches[0].clientX + event.touches[1].clientX) / 2;
-                    const centerY_screen = (event.touches[0].clientY + event.touches[1].clientY) / 2;
-                    
-                    const Px = (centerX_screen - rect.left) * (CANVAS_WIDTH / rect.width);
-                    const Py = (centerY_screen - rect.top) * (CANVAS_HEIGHT / rect.height);
-                    
-                    const scaledWidth = userPhoto.width * oldScale;
-                    const scaledHeight = userPhoto.height * oldScale;
-                    const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
-                    const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
-                    
-                    const imageRelX = Px - initialX - imageState.offsetX;
-                    const imageRelY = Py - initialY - imageState.offsetY;
-
-                    const factor = newScale / oldScale;
-
-                    imageState.offsetX += imageRelX * (1 - factor);
-                    imageState.offsetY += imageRelY * (1 - factor);
-
-                    imageState.scale = newScale;
-                    imageState.initialDistance = currentDistance;
-                }
-            } else if (imageState.isDragging) {
-                 event.preventDefault();
-                const coords = getCanvasCoords(event);
-                const deltaX = coords.x - imageState.lastX;
-                const deltaY = coords.y - imageState.lastY;
-
-                imageState.offsetX += deltaX;
-                imageState.offsetY += deltaY;
-                imageState.lastX = coords.x;
-                imageState.lastY = coords.y;
-            }
-            
-            drawCombinedImage();
-        }
-
-        function handleEnd(event) {
-            if (!event.touches || event.touches.length === 0) {
-                imageState.isDragging = false;
-                imageState.isPinching = false;
-                imageState.initialDistance = 0;
-            }
-            
-            drawCombinedImage();
-        }
-
-        // --- Event Listener untuk Zoom (Mouse Wheel) ---
-        function handleZoom(event) {
-            if (!userPhoto) return;
-            event.preventDefault();
-
-            const oldScale = imageState.scale;
-            const delta = event.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
-            
-            let newScale = imageState.scale + delta;
-            newScale = Math.max(0.1, Math.min(newScale, 5.0));
-
-            if (newScale !== oldScale) {
-                const factor = newScale / oldScale;
-                const rect = canvas.getBoundingClientRect();
-                
-                const Px = event.offsetX * (CANVAS_WIDTH / rect.width);
-                const Py = event.offsetY * (CANVAS_HEIGHT / rect.height);
-
-                const initialX = (CANVAS_WIDTH - userPhoto.width * oldScale) / 2;
-                const initialY = (CANVAS_HEIGHT - userPhoto.height * oldScale) / 2;
-                
-                const imageRelX = Px - initialX - imageState.offsetX;
-                const imageRelY = Py - initialY - imageState.offsetY;
-                
-                imageState.offsetX += imageRelX * (1 - factor);
-                imageState.offsetY += imageRelY * (1 - factor);
-                imageState.scale = newScale;
-            }
-            
-            drawCombinedImage();
-        }
-
-        // --- Menangani Upload Foto Pengguna ---
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                userPhoto = new Image();
-                userPhoto.onload = () => {
-                    const scaleFactorX = CANVAS_WIDTH / userPhoto.width;
-                    const scaleFactorY = CANVAS_HEIGHT / userPhoto.height;
-                    const minScaleToFit = Math.min(scaleFactorX, scaleFactorY);
-                    
-                    let initialScale = minScaleToFit;
-                    if (initialScale < 0.1) initialScale = 0.1;
+            const fileURL = URL.createObjectURL(file);
 
-                    imageState = { 
-                        offsetX: 0, 
-                        offsetY: 0, 
-                        scale: initialScale, 
-                        isDragging: false,
-                        isPinching: false,
-                        initialDistance: 0,
-                        lastX: 0, 
-                        lastY: 0 
-                    };
-                    drawCombinedImage();
-                    showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
-                    
-                    // PERBAIKAN: Auto-scroll ke Tombol Download agar pasti terlihat
-                    downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                };
-                userPhoto.onerror = () => {
-                    showMessage("Gagal memuat foto. Pastikan format file gambar valid.", true);
+            // Tentukan jenis file
+            if (file.type.startsWith('image/')) {
+                mediaType = 'image';
+                handleImageFile(fileURL);
+                if (userVideo) {
+                    userVideo.pause(); 
+                    userVideo.removeAttribute('src'); 
                 }
-                userPhoto.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- Fungsi Download Gambar ---
-        function downloadImage() {
-            if (!userPhoto || !isTwibbonLoaded) {
-                showMessage("Mohon unggah foto Anda terlebih dahulu.", true);
+            } else if (file.type.startsWith('video/')) {
+                mediaType = 'video';
+                handleVideoFile(fileURL);
+                userPhoto = null;
+            } else {
+                showMessage("Format file tidak didukung (Hanya Gambar atau Video).", true);
                 return;
             }
+            
+            downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+        
+        function handleImageFile(fileURL) {
+            userPhoto = new Image();
+            userPhoto.onload = () => {
+                resetImageState(userPhoto.width, userPhoto.height);
+                showMessage("Foto berhasil diunggah dan siap diatur posisinya!", false);
+                // Hentikan animasi video jika ada
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                drawCombinedImage();
+            };
+            userPhoto.onerror = () => { showMessage("Gagal memuat foto.", true); }
+            userPhoto.src = fileURL;
+        }
 
+        function handleVideoFile(fileURL) {
+            userVideo.src = fileURL;
+            userVideo.onloadedmetadata = () => {
+                // Setelah metadata dimuat, set scale dan mulai play
+                resetImageState(userVideo.videoWidth, userVideo.videoHeight);
+                userVideo.currentTime = 0; // Mulai dari awal
+                userVideo.play();
+                
+                // Mulai looping canvas untuk video
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                animateCanvas();
+                
+                showMessage("Video berhasil diunggah. Video diputar otomatis. Atur posisi, lalu tekan download!", false);
+            };
+            userVideo.onerror = () => { showMessage("Gagal memuat video.", true); }
+        }
+
+        function resetImageState(naturalWidth, naturalHeight) {
+            const scaleFactorX = CANVAS_WIDTH / naturalWidth;
+            const scaleFactorY = CANVAS_HEIGHT / naturalHeight;
+            const minScaleToFit = Math.min(scaleFactorX, scaleFactorY);
+            let initialScale = Math.max(0.1, minScaleToFit);
+
+            imageState = { 
+                offsetX: 0, offsetY: 0, scale: initialScale, isDragging: false,
+                isPinching: false, initialDistance: 0, lastX: 0, lastY: 0 
+            };
+        }
+        
+        // ====================================
+        // === FUNGSI DOWNLOAD (DIUBAH) ===
+        // ====================================
+
+        function downloadImage() {
+            if (mediaType === 'video' && (!userVideo || userVideo.readyState < 2)) {
+                showMessage("Mohon tunggu hingga video selesai dimuat.", true);
+                return;
+            }
+            if (mediaType === 'image' && !userPhoto) {
+                 showMessage("Mohon unggah foto Anda terlebih dahulu.", true);
+                return;
+            }
+            
+            // Hentikan animasi saat download (jika media adalah video)
+            if (mediaType === 'video' && animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            // Pastikan canvas diperbarui dengan frame terakhir sebelum download
+            drawCombinedImage(); 
+            
             const imageURL = canvas.toDataURL("image/png");
-
             const link = document.createElement('a');
             link.href = imageURL;
-            link.download = `twibbon-gkii-summit-2025-1080x1920-${Date.now()}.png`; 
+            
+            let fileName = (mediaType === 'video') ? `twibbon-frame-gkii-summit-${Date.now()}.png` : `twibbon-gkii-summit-${Date.now()}.png`;
+            link.download = fileName;
             
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
+            // Efek tombol sukses
             downloadBtn.classList.remove('btn-orange-gradient');
             downloadBtn.classList.add('btn-success-gradient');
-            downloadBtn.innerHTML = '✅ Yeay Gambar Sudah di Unduh';
+            downloadBtn.innerHTML = (mediaType === 'video') ? '✅ Frame Video Berhasil di Unduh' : '✅ Gambar Sudah di Unduh';
 
             setTimeout(() => {
                 downloadBtn.classList.remove('btn-success-gradient');
@@ -584,31 +440,171 @@
                 `;
             }, 3000);
 
-            showMessage("Gambar Twibbon berhasil diunduh!", false);
+            showMessage("Twibbon berhasil diunduh!", false);
         }
+        
+        // --- FUNGSI PELENGKAP LAINNYA (INTERAKSI DITAMBAHKAN KEMBALI) ---
+        
+        function scrollToDownloadButton() {
+            if (!downloadBtn || !floatingScrollPrompt) return;
+            downloadBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            floatingScrollPrompt.style.display = 'none';
+        }
+        function showMessage(message, isError = false) {
+            if (!statusMsg) return;
+            statusMsg.textContent = message;
+            statusMsg.classList.remove('d-none', 'text-danger', 'text-success'); 
+            statusMsg.classList.add(isError ? 'text-danger' : 'text-success'); 
+            if (!isError) {
+                setTimeout(() => statusMsg.classList.add('d-none'), 3000);
+            }
+        }
+        function getCanvasCoords(event) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (event.touches) { clientX = event.touches[0].clientX; clientY = event.touches[0].clientY; } 
+            else { clientX = event.clientX; clientY = event.clientY; }
 
-        // Inisialisasi: Memuat Twibbon dan memasang event listeners
-        window.onload = () => {
-            loadTwibbonFrame();
-            drawCombinedImage(); 
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+        function handleStart(event) {
+            let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
+            if (!mediaSource) return;
             
-            canvas.addEventListener('mousedown', handleStart);
-            canvas.addEventListener('mousemove', handleMove);
-            canvas.addEventListener('mouseup', handleEnd);
-            canvas.addEventListener('mouseleave', handleEnd);
+            // Jika video berjalan saat start drag, pause videonya
+            if(mediaType === 'video' && !userVideo.paused) {
+                userVideo.pause();
+            }
 
-            canvas.addEventListener('touchstart', handleStart, { passive: false });
-            canvas.addEventListener('touchmove', handleMove, { passive: false });
-            canvas.addEventListener('touchend', handleEnd);
+            const rect = canvas.getBoundingClientRect();
+            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+            const isInsideCanvas = ( clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom );
 
-            canvas.addEventListener('wheel', handleZoom, { passive: false });
+            if (event.touches && event.touches.length === 2 && isInsideCanvas) {
+                event.preventDefault();
+                imageState.isDragging = false;
+                imageState.isPinching = true;
+                const dx = event.touches[1].clientX - event.touches[0].clientX;
+                const dy = event.touches[1].clientY - event.touches[0].clientY;
+                imageState.initialDistance = Math.sqrt(dx * dx + dy * dy);
+            } else if (((event.touches && event.touches.length === 1) || event.buttons === 1) && isInsideCanvas) {
+                event.preventDefault();
+                imageState.isDragging = true;
+                imageState.isPinching = false;
+                const coords = getCanvasCoords(event);
+                imageState.lastX = coords.x;
+                imageState.lastY = coords.y;
+            }
+            drawCombinedImage();
+        }
+        function handleMove(event) {
+            let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
+            if (!mediaSource) return;
+            
+            if (imageState.isPinching && event.touches && event.touches.length === 2) {
+                event.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const oldScale = imageState.scale;
+                const dx = event.touches[1].clientX - event.touches[0].clientX;
+                const dy = event.touches[1].clientY - event.touches[0].clientY;
+                const currentDistance = Math.sqrt(dx * dx + dy * dy);
 
-            checkScrollPosition(); 
-            window.addEventListener('scroll', checkScrollPosition);
-        };
+                const scaleMultiplier = currentDistance / imageState.initialDistance;
+                let newScale = oldScale * scaleMultiplier;
+                newScale = Math.max(0.1, Math.min(newScale, 5.0));
 
-        // NEW: Logika untuk menyembunyikan/menampilkan Floating Scroll Indicator
+                if (newScale !== oldScale) {
+                    const centerX_screen = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+                    const centerY_screen = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+                    const Px = (centerX_screen - rect.left) * (CANVAS_WIDTH / rect.width);
+                    const Py = (centerY_screen - rect.top) * (CANVAS_HEIGHT / rect.height);
+                    let naturalWidth = (mediaType === 'image') ? userPhoto.width : userVideo.videoWidth;
+                    let naturalHeight = (mediaType === 'image') ? userPhoto.height : userVideo.videoHeight;
+                    const scaledWidth = naturalWidth * oldScale;
+                    const scaledHeight = naturalHeight * oldScale;
+                    const initialX = (CANVAS_WIDTH - scaledWidth) / 2;
+                    const initialY = (CANVAS_HEIGHT - scaledHeight) / 2;
+                    const imageRelX = Px - initialX - imageState.offsetX;
+                    const imageRelY = Py - initialY - imageState.offsetY;
+                    const factor = newScale / oldScale;
+
+                    imageState.offsetX += imageRelX * (1 - factor);
+                    imageState.offsetY += imageRelY * (1 - factor);
+                    imageState.scale = newScale;
+                    imageState.initialDistance = currentDistance;
+                }
+            } else if (imageState.isDragging) {
+                 event.preventDefault();
+                const coords = getCanvasCoords(event);
+                const deltaX = coords.x - imageState.lastX;
+                const deltaY = coords.y - imageState.lastY;
+                imageState.offsetX += deltaX;
+                imageState.offsetY += deltaY;
+                imageState.lastX = coords.x;
+                imageState.lastY = coords.y;
+            }
+            drawCombinedImage();
+        }
+        function handleEnd(event) {
+            if (!event.touches || event.touches.length === 0) {
+                imageState.isDragging = false;
+                imageState.isPinching = false;
+                imageState.initialDistance = 0;
+            }
+            // Jika video di-pause untuk drag/zoom, lanjutkan play setelah end
+            if(mediaType === 'video' && userVideo.paused) {
+                 userVideo.play();
+                 animateCanvas(); // Lanjutkan loop
+            }
+            drawCombinedImage();
+        }
+        function handleZoom(event) {
+             let mediaSource = (mediaType === 'image') ? userPhoto : (userVideo && userVideo.readyState >= 2 ? userVideo : null);
+            if (!mediaSource) return;
+            
+            // Jika video berjalan saat zoom, pause videonya
+            if(mediaType === 'video' && !userVideo.paused) {
+                userVideo.pause();
+            }
+
+            event.preventDefault();
+
+            const oldScale = imageState.scale;
+            const delta = event.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
+            let newScale = imageState.scale + delta;
+            newScale = Math.max(0.1, Math.min(newScale, 5.0));
+
+            if (newScale !== oldScale) {
+                const factor = newScale / oldScale;
+                const rect = canvas.getBoundingClientRect();
+                const Px = event.offsetX * (CANVAS_WIDTH / rect.width);
+                const Py = event.offsetY * (CANVAS_HEIGHT / rect.height);
+
+                let naturalWidth = (mediaType === 'image') ? userPhoto.width : userVideo.videoWidth;
+                let naturalHeight = (mediaType === 'image') ? userPhoto.height : userVideo.videoHeight;
+                const initialX = (CANVAS_WIDTH - naturalWidth * oldScale) / 2;
+                const initialY = (CANVAS_HEIGHT - naturalHeight * oldScale) / 2;
+                
+                const imageRelX = Px - initialX - imageState.offsetX;
+                const imageRelY = Py - initialY - imageState.offsetY;
+                
+                imageState.offsetX += imageRelX * (1 - factor);
+                imageState.offsetY += imageRelY * (1 - factor);
+                imageState.scale = newScale;
+            }
+            drawCombinedImage();
+            
+            // Lanjutkan play setelah zoom selesai (jika video)
+            if(mediaType === 'video' && userVideo.paused) {
+                 userVideo.play();
+                 animateCanvas();
+            }
+        }
         function checkScrollPosition() {
+            if (!floatingScrollPrompt) return;
             const documentHeight = document.documentElement.scrollHeight;
             const viewportHeight = window.innerHeight;
             const scrollY = window.scrollY;
@@ -621,7 +617,6 @@
                 floatingScrollPrompt.style.display = 'none';
             }
         }
-
     </script>
 </body>
 </html>
